@@ -1,6 +1,7 @@
 /* =====================================================
    ¡Conjuga! — Spanish Verbs & Sentences Linguistic Data
-   Carefully verified A1–A2 dataset for Chinese beginners
+   112 verified verbs (36 common A1 + 76 extended A1–B1)
+   182 curated beginner-friendly Spanish sentences
    ===================================================== */
 
 const PERSONS = [
@@ -75,157 +76,181 @@ const TENSE_META = {
   }
 };
 
+// -------------------- Regular Conjugation Builder --------------------
+const REFLEXIVE_PRONOUNS = ['me ', 'te ', 'se ', 'nos ', 'os ', 'se '];
+
+function buildRegularConjugations(infinitive) {
+  const isReflexive = infinitive.endsWith('se');
+  const base = isReflexive ? infinitive.slice(0, -2) : infinitive;
+  const ending = base.slice(-2);
+  const stem = base.slice(0, -2);
+
+  let presente, indefinido, imperfecto;
+  const futuro = [base + 'é', base + 'ás', base + 'á', base + 'emos', base + 'éis', base + 'án'];
+
+  if (ending === 'ar') {
+    let indYo = stem + 'é';
+    if (base.endsWith('car')) indYo = base.slice(0, -3) + 'qué';
+    else if (base.endsWith('gar')) indYo = base.slice(0, -3) + 'gué';
+    else if (base.endsWith('zar')) indYo = base.slice(0, -3) + 'cé';
+
+    presente = [stem + 'o', stem + 'as', stem + 'a', stem + 'amos', stem + 'áis', stem + 'an'];
+    indefinido = [indYo, stem + 'aste', stem + 'ó', stem + 'amos', stem + 'asteis', stem + 'aron'];
+    imperfecto = [stem + 'aba', stem + 'abas', stem + 'aba', stem + 'ábamos', stem + 'abais', stem + 'aban'];
+  } else if (ending === 'er') {
+    presente = [stem + 'o', stem + 'es', stem + 'e', stem + 'emos', stem + 'éis', stem + 'en'];
+    indefinido = [stem + 'í', stem + 'iste', stem + 'ió', stem + 'imos', stem + 'isteis', stem + 'ieron'];
+    imperfecto = [stem + 'ía', stem + 'ías', stem + 'ía', stem + 'íamos', stem + 'íais', stem + 'ían'];
+  } else {
+    presente = [stem + 'o', stem + 'es', stem + 'e', stem + 'imos', stem + 'ís', stem + 'en'];
+    indefinido = [stem + 'í', stem + 'iste', stem + 'ió', stem + 'imos', stem + 'isteis', stem + 'ieron'];
+    imperfecto = [stem + 'ía', stem + 'ías', stem + 'ía', stem + 'íamos', stem + 'íais', stem + 'ían'];
+  }
+
+  if (isReflexive) {
+    const addPron = (arr) => arr.map((f, i) => REFLEXIVE_PRONOUNS[i] + f);
+    return {
+      presente: addPron(presente),
+      indefinido: addPron(indefinido),
+      imperfecto: addPron(imperfecto),
+      futuro: addPron(futuro)
+    };
+  }
+  return { presente, indefinido, imperfecto, futuro };
+}
+
+function regularVerb(infinitive, meaning, tip, tier = 'extended', customBadge = null) {
+  const isReflexive = infinitive.endsWith('se');
+  const base = isReflexive ? infinitive.slice(0, -2) : infinitive;
+  const ending = base.slice(-2);
+  let badge = customBadge;
+  if (!badge) {
+    if (isReflexive) badge = '自复动词 (-se)';
+    else if (base.endsWith('car')) badge = '-ar 动词（过去时 c→qu）';
+    else if (base.endsWith('gar')) badge = '-ar 动词（过去时 g→gu）';
+    else if (base.endsWith('zar')) badge = '-ar 动词（过去时 z→c）';
+    else badge = `-${ending} 规则动词`;
+  }
+  return {
+    infinitive,
+    meaning,
+    category: isReflexive ? 'reflexive' : 'regular',
+    tier,
+    badge,
+    tip,
+    conjugations: buildRegularConjugations(infinitive)
+  };
+}
+
+// =====================================================
+// VERB BANK: 36 Common (A1 Core) + 76 Extended = 112 Verbs
+// =====================================================
 const VERBS = {
-  // ===== Regular -ar =====
+  // ---------- COMMON (36 Core Beginner Verbs) ----------
   hablar: {
     infinitive: 'hablar',
     meaning: '说，讲',
     category: 'regular',
+    tier: 'common',
     badge: '-ar 规则动词',
     tip: '最典型的 -ar 规则动词，去掉 -ar 后加上对应人称词尾即可。',
-    conjugations: {
-      presente: ['hablo', 'hablas', 'habla', 'hablamos', 'habláis', 'hablan'],
-      indefinido: ['hablé', 'hablaste', 'habló', 'hablamos', 'hablasteis', 'hablaron'],
-      imperfecto: ['hablaba', 'hablabas', 'hablaba', 'hablábamos', 'hablabais', 'hablaban'],
-      futuro: ['hablaré', 'hablarás', 'hablará', 'hablaremos', 'hablaréis', 'hablarán']
-    }
+    conjugations: buildRegularConjugations('hablar')
   },
   estudiar: {
     infinitive: 'estudiar',
     meaning: '学习，研读',
     category: 'regular',
+    tier: 'common',
     badge: '-ar 规则动词',
     tip: '-ar 规则动词，词干为 estudi-，各人称词尾与 hablar 一致。',
-    conjugations: {
-      presente: ['estudio', 'estudias', 'estudia', 'estudiamos', 'estudiáis', 'estudian'],
-      indefinido: ['estudié', 'estudiaste', 'estudió', 'estudiamos', 'estudiasteis', 'estudiaron'],
-      imperfecto: ['estudiaba', 'estudiabas', 'estudiaba', 'estudiábamos', 'estudiabais', 'estudiaban'],
-      futuro: ['estudiaré', 'estudiarás', 'estudiará', 'estudiaremos', 'estudiaréis', 'estudiarán']
-    }
+    conjugations: buildRegularConjugations('estudiar')
   },
   trabajar: {
     infinitive: 'trabajar',
     meaning: '工作',
     category: 'regular',
+    tier: 'common',
     badge: '-ar 规则动词',
     tip: '-ar 规则动词，词干为 trabaj-，注意字母 j 读作喉音 /x/。',
-    conjugations: {
-      presente: ['trabajo', 'trabajas', 'trabaja', 'trabajamos', 'trabajáis', 'trabajan'],
-      indefinido: ['trabajé', 'trabajaste', 'trabajó', 'trabajamos', 'trabajasteis', 'trabajaron'],
-      imperfecto: ['trabajaba', 'trabajabas', 'trabajaba', 'trabajábamos', 'trabajabais', 'trabajaban'],
-      futuro: ['trabajaré', 'trabajarás', 'trabajará', 'trabajaremos', 'trabajaréis', 'trabajarán']
-    }
+    conjugations: buildRegularConjugations('trabajar')
   },
   comprar: {
     infinitive: 'comprar',
     meaning: '买，购买',
     category: 'regular',
+    tier: 'common',
     badge: '-ar 规则动词',
     tip: '-ar 规则动词，词干为 compr-，日常购物高频词。',
-    conjugations: {
-      presente: ['compro', 'compras', 'compra', 'compramos', 'compráis', 'compran'],
-      indefinido: ['compré', 'compraste', 'compró', 'compramos', 'comprasteis', 'compraron'],
-      imperfecto: ['compraba', 'comprabas', 'compraba', 'comprábamos', 'comprabais', 'compraban'],
-      futuro: ['compraré', 'comprarás', 'comprará', 'compraremos', 'compraréis', 'comprarán']
-    }
+    conjugations: buildRegularConjugations('comprar')
   },
   escuchar: {
     infinitive: 'escuchar',
     meaning: '听，聆听',
     category: 'regular',
+    tier: 'common',
     badge: '-ar 规则动词',
     tip: '-ar 规则动词，词干为 escuch-，后面可直接跟宾语（如 escuchar música）。',
-    conjugations: {
-      presente: ['escucho', 'escuchas', 'escucha', 'escuchamos', 'escucháis', 'escuchan'],
-      indefinido: ['escuché', 'escuchaste', 'escuchó', 'escuchamos', 'escuchasteis', 'escucharon'],
-      imperfecto: ['escuchaba', 'escuchabas', 'escuchaba', 'escuchábamos', 'escuchabais', 'escuchaban'],
-      futuro: ['escucharé', 'escucharás', 'escuchará', 'escucharemos', 'escucharéis', 'escucharán']
-    }
+    conjugations: buildRegularConjugations('escuchar')
   },
   viajar: {
     infinitive: 'viajar',
     meaning: '旅行',
     category: 'regular',
+    tier: 'common',
     badge: '-ar 规则动词',
     tip: '-ar 规则动词，词干为 viaj-，完全规则。',
-    conjugations: {
-      presente: ['viajo', 'viajas', 'viaja', 'viajamos', 'viajáis', 'viajan'],
-      indefinido: ['viajé', 'viajaste', 'viajó', 'viajamos', 'viajasteis', 'viajaron'],
-      imperfecto: ['viajaba', 'viajabas', 'viajaba', 'viajábamos', 'viajabais', 'viajaban'],
-      futuro: ['viajaré', 'viajarás', 'viajará', 'viajaremos', 'viajaréis', 'viajarán']
-    }
+    conjugations: buildRegularConjugations('viajar')
   },
   cocinar: {
     infinitive: 'cocinar',
     meaning: '做饭，烹饪',
     category: 'regular',
+    tier: 'common',
     badge: '-ar 规则动词',
     tip: '-ar 规则动词，词干为 cocin-。',
-    conjugations: {
-      presente: ['cocino', 'cocinas', 'cocina', 'cocinamos', 'cocináis', 'cocinan'],
-      indefinido: ['cociné', 'cocinaste', 'cocinó', 'cocinamos', 'cocinasteis', 'cocinaron'],
-      imperfecto: ['cocinaba', 'cocinabas', 'cocinaba', 'cocinábamos', 'cocinabais', 'cocinaban'],
-      futuro: ['cocinaré', 'cocinarás', 'cocinará', 'cocinaremos', 'cocinaréis', 'cocinarán']
-    }
+    conjugations: buildRegularConjugations('cocinar')
   },
   tomar: {
     infinitive: 'tomar',
     meaning: '喝，吃，乘坐，拿',
     category: 'regular',
+    tier: 'common',
     badge: '-ar 规则动词',
     tip: '-ar 规则动词，西语万能动词之一（tomar café 喝咖啡，tomar el metro 坐地铁）。',
-    conjugations: {
-      presente: ['tomo', 'tomas', 'toma', 'tomamos', 'tomáis', 'toman'],
-      indefinido: ['tomé', 'tomaste', 'tomó', 'tomamos', 'tomasteis', 'tomaron'],
-      imperfecto: ['tomaba', 'tomabas', 'tomaba', 'tomábamos', 'tomabais', 'tomaban'],
-      futuro: ['tomaré', 'tomarás', 'tomará', 'tomaremos', 'tomaréis', 'tomarán']
-    }
+    conjugations: buildRegularConjugations('tomar')
   },
-
-  // ===== Regular -er =====
   comer: {
     infinitive: 'comer',
     meaning: '吃，吃午饭',
     category: 'regular',
+    tier: 'common',
     badge: '-er 规则动词',
     tip: '最典型的 -er 规则动词，现在时词尾为 -o, -es, -e, -emos, -éis, -en。',
-    conjugations: {
-      presente: ['como', 'comes', 'come', 'comemos', 'coméis', 'comen'],
-      indefinido: ['comí', 'comiste', 'comió', 'comimos', 'comisteis', 'comieron'],
-      imperfecto: ['comía', 'comías', 'comía', 'comíamos', 'comíais', 'comían'],
-      futuro: ['comeré', 'comerás', 'comerá', 'comeremos', 'comeréis', 'comerán']
-    }
+    conjugations: buildRegularConjugations('comer')
   },
   beber: {
     infinitive: 'beber',
     meaning: '喝，饮用',
     category: 'regular',
+    tier: 'common',
     badge: '-er 规则动词',
     tip: '-er 规则动词，词干为 beb-，变位规律与 comer 完全一致。',
-    conjugations: {
-      presente: ['bebo', 'bebes', 'bebe', 'bebemos', 'bebéis', 'beben'],
-      indefinido: ['bebí', 'bebiste', 'bebió', 'bebimos', 'bebisteis', 'bebieron'],
-      imperfecto: ['bebía', 'bebías', 'bebía', 'bebíamos', 'bebíais', 'bebían'],
-      futuro: ['beberé', 'beberás', 'beberá', 'beberemos', 'beberéis', 'beberán']
-    }
+    conjugations: buildRegularConjugations('beber')
   },
   aprender: {
     infinitive: 'aprender',
     meaning: '学习，学会',
     category: 'regular',
+    tier: 'common',
     badge: '-er 规则动词',
     tip: '-er 规则动词，强调“学会某项技能”，常搭配介词 a（aprender a conducir）。',
-    conjugations: {
-      presente: ['aprendo', 'aprendes', 'aprende', 'aprendemos', 'aprendéis', 'aprenden'],
-      indefinido: ['aprendí', 'aprendiste', 'aprendió', 'aprendimos', 'aprendisteis', 'aprendieron'],
-      imperfecto: ['aprendía', 'aprendías', 'aprendía', 'aprendíamos', 'aprendíais', 'aprendían'],
-      futuro: ['aprenderé', 'aprenderás', 'aprenderá', 'aprenderemos', 'aprenderéis', 'aprenderán']
-    }
+    conjugations: buildRegularConjugations('aprender')
   },
   leer: {
     infinitive: 'leer',
     meaning: '读，阅读',
     category: 'regular',
+    tier: 'common',
     badge: '-er 动词（过去时拼写变化）',
     tip: '现在时完全规则（leo, lees...）；简单过去时第三人称 i 变为 y（leyó, leyeron）。',
     conjugations: {
@@ -235,53 +260,38 @@ const VERBS = {
       futuro: ['leeré', 'leerás', 'leerá', 'leeremos', 'leeréis', 'leerán']
     }
   },
-
-  // ===== Regular -ir =====
   vivir: {
     infinitive: 'vivir',
     meaning: '居住，生活',
     category: 'regular',
+    tier: 'common',
     badge: '-ir 规则动词',
     tip: '最典型的 -ir 规则动词。注意现在时仅 nosotros (-imos) 和 vosotros (-ís) 与 -er 不同。',
-    conjugations: {
-      presente: ['vivo', 'vives', 'vive', 'vivimos', 'vivís', 'viven'],
-      indefinido: ['viví', 'viviste', 'vivió', 'vivimos', 'vivisteis', 'vivieron'],
-      imperfecto: ['vivía', 'vivías', 'vivía', 'vivíamos', 'vivíais', 'vivían'],
-      futuro: ['viviré', 'vivirás', 'vivirá', 'viviremos', 'viviréis', 'vivirán']
-    }
+    conjugations: buildRegularConjugations('vivir')
   },
   escribir: {
     infinitive: 'escribir',
     meaning: '写，书写',
     category: 'regular',
+    tier: 'common',
     badge: '-ir 规则动词',
     tip: '-ir 规则动词，词干为 escrib-，各人称词尾与 vivir 相同。',
-    conjugations: {
-      presente: ['escribo', 'escribes', 'escribe', 'escribimos', 'escribís', 'escriben'],
-      indefinido: ['escribí', 'escribiste', 'escribió', 'escribimos', 'escribisteis', 'escribieron'],
-      imperfecto: ['escribía', 'escribías', 'escribía', 'escribíamos', 'escribíais', 'escribían'],
-      futuro: ['escribiré', 'escribirás', 'escribirá', 'escribiremos', 'escribiréis', 'escribirán']
-    }
+    conjugations: buildRegularConjugations('escribir')
   },
   abrir: {
     infinitive: 'abrir',
     meaning: '打开，开门',
     category: 'regular',
+    tier: 'common',
     badge: '-ir 规则动词',
     tip: '-ir 规则动词，词干为 abr-。',
-    conjugations: {
-      presente: ['abro', 'abres', 'abre', 'abrimos', 'abrís', 'abren'],
-      indefinido: ['abrí', 'abriste', 'abrió', 'abrimos', 'abristeis', 'abrieron'],
-      imperfecto: ['abría', 'abrías', 'abría', 'abríamos', 'abríais', 'abrían'],
-      futuro: ['abriré', 'abrirás', 'abrirá', 'abriremos', 'abriréis', 'abrirán']
-    }
+    conjugations: buildRegularConjugations('abrir')
   },
-
-  // ===== Stem-changing verbs =====
   querer: {
     infinitive: 'querer',
     meaning: '想要，爱',
     category: 'stem',
+    tier: 'common',
     badge: '词干变化 e→ie',
     tip: '现在时 e→ie（nosotros/vosotros 不变：queremos）；过去时词干 quis-；将来时双 r：querr-。',
     conjugations: {
@@ -295,6 +305,7 @@ const VERBS = {
     infinitive: 'poder',
     meaning: '能够，可以',
     category: 'stem',
+    tier: 'common',
     badge: '词干变化 o→ue',
     tip: '现在时 o→ue（podemos 不变）；简单过去时词干 pud-；将来时去 e：podr-。',
     conjugations: {
@@ -308,6 +319,7 @@ const VERBS = {
     infinitive: 'dormir',
     meaning: '睡觉',
     category: 'stem',
+    tier: 'common',
     badge: '词干变化 o→ue',
     tip: '现在时 o→ue（dormimos 不变）；简单过去时第三人称 o→u（durmió, durmieron）。',
     conjugations: {
@@ -321,6 +333,7 @@ const VERBS = {
     infinitive: 'empezar',
     meaning: '开始',
     category: 'stem',
+    tier: 'common',
     badge: '词干变化 e→ie',
     tip: '现在时 e→ie（empezamos 不变）；简单过去时 yo 拼写变化 z→c（empecé）。',
     conjugations: {
@@ -334,6 +347,7 @@ const VERBS = {
     infinitive: 'pedir',
     meaning: '点餐，请求，要',
     category: 'stem',
+    tier: 'common',
     badge: '词干变化 e→i',
     tip: '现在时 e→i（pedimos 不变）；简单过去时第三人称 e→i（pidió, pidieron）。',
     conjugations: {
@@ -347,6 +361,7 @@ const VERBS = {
     infinitive: 'jugar',
     meaning: '玩，做（球类运动）',
     category: 'stem',
+    tier: 'common',
     badge: '词干变化 u→ue',
     tip: '全西语唯一的 u→ue 动词！现在时 jugar→juego（jugamos 不变）；过去时 yo 为 jugué。',
     conjugations: {
@@ -360,6 +375,7 @@ const VERBS = {
     infinitive: 'volver',
     meaning: '返回，回来',
     category: 'stem',
+    tier: 'common',
     badge: '词干变化 o→ue',
     tip: '现在时 o→ue（volvemos 不变），其余三个时态均规则！',
     conjugations: {
@@ -369,12 +385,11 @@ const VERBS = {
       futuro: ['volveré', 'volverás', 'volverá', 'volveremos', 'volveréis', 'volverán']
     }
   },
-
-  // ===== High-frequency Irregular verbs =====
   ser: {
     infinitive: 'ser',
     meaning: '是（本质、身份、时间）',
     category: 'irregular',
+    tier: 'common',
     badge: '高频不规则',
     tip: '核心基础动词！表示身份、国籍、职业、性格与时间。过去时与 ir 变位完全相同（fui...）。',
     conjugations: {
@@ -388,6 +403,7 @@ const VERBS = {
     infinitive: 'estar',
     meaning: '在，处于（位置、状态）',
     category: 'irregular',
+    tier: 'common',
     badge: '高频不规则',
     tip: '表示位置、情绪和暂时状态。注意现在时 estás, está, estáis, están 均带重音！',
     conjugations: {
@@ -401,6 +417,7 @@ const VERBS = {
     infinitive: 'ir',
     meaning: '去，前往',
     category: 'irregular',
+    tier: 'common',
     badge: '高频不规则',
     tip: '现在时以 v- 开头（voy, vas, va...）；未完成时为 iba...；常构成 ir + a + 动词原形（将要做）。',
     conjugations: {
@@ -414,6 +431,7 @@ const VERBS = {
     infinitive: 'tener',
     meaning: '有，拥有（也表年龄/状态）',
     category: 'irregular',
+    tier: 'common',
     badge: '高频不规则',
     tip: '现在时 yo 为 tengo，其余靴形 e→ie（tienes, tiene, tienen）；过去时词干 tuv-；将来时 tendr-。',
     conjugations: {
@@ -427,6 +445,7 @@ const VERBS = {
     infinitive: 'hacer',
     meaning: '做，制作（也表天气）',
     category: 'irregular',
+    tier: 'common',
     badge: '高频不规则',
     tip: '现在时仅 yo 不规则（hago）；过去时词干 hic-（第三人称 hizo）；将来时 har-。',
     conjugations: {
@@ -440,6 +459,7 @@ const VERBS = {
     infinitive: 'venir',
     meaning: '来，来到',
     category: 'irregular',
+    tier: 'common',
     badge: '高频不规则',
     tip: '与 tener 非常像！现在时 yo 为 vengo，其余靴形 e→ie（vienes...）；将来时 vendr-。',
     conjugations: {
@@ -453,6 +473,7 @@ const VERBS = {
     infinitive: 'decir',
     meaning: '说，告诉',
     category: 'irregular',
+    tier: 'common',
     badge: '高频不规则',
     tip: '现在时 yo 为 digo，靴形 e→i（dices, dice, dicen）；过去时 dij-；将来时 dir-。',
     conjugations: {
@@ -466,6 +487,7 @@ const VERBS = {
     infinitive: 'saber',
     meaning: '知道，会（技能）',
     category: 'irregular',
+    tier: 'common',
     badge: '高频不规则',
     tip: '现在时仅 yo 特殊（sé，带重音以区别于代词 se）；过去时 sup-；将来时 sabr-。',
     conjugations: {
@@ -479,6 +501,7 @@ const VERBS = {
     infinitive: 'salir',
     meaning: '出去，离开，出发',
     category: 'irregular',
+    tier: 'common',
     badge: '高频不规则',
     tip: '现在时仅 yo 为 salgo（-go 动词），其余完全规则；将来时词干 saldr-。',
     conjugations: {
@@ -492,6 +515,7 @@ const VERBS = {
     infinitive: 'ver',
     meaning: '看，看见，观看',
     category: 'irregular',
+    tier: 'common',
     badge: '高频不规则',
     tip: '现在时 yo 为 veo；过去未完成时保留 e（veía...）；过去时单音节 vi/vio 不加重音。',
     conjugations: {
@@ -505,6 +529,7 @@ const VERBS = {
     infinitive: 'dar',
     meaning: '给，给予',
     category: 'irregular',
+    tier: 'common',
     badge: '高频不规则',
     tip: '现在时 yo 为 doy，其余按 -ar 变位（vosotros 为 dais 无重音）；过去时按 -er/-ir 词尾变（di, diste, dio...）。',
     conjugations: {
@@ -514,38 +539,29 @@ const VERBS = {
       futuro: ['daré', 'darás', 'dará', 'daremos', 'daréis', 'darán']
     }
   },
-
-  // ===== Reflexive verbs =====
   llamarse: {
     infinitive: 'llamarse',
     meaning: '名叫，被称为',
     category: 'reflexive',
+    tier: 'common',
     badge: '自复动词 (-se)',
     tip: '自复动词需在变位动词前加上对应自复代词：me, te, se, nos, os, se。',
-    conjugations: {
-      presente: ['me llamo', 'te llamas', 'se llama', 'nos llamamos', 'os llamáis', 'se llaman'],
-      indefinido: ['me llamé', 'te llamaste', 'se llamó', 'nos llamamos', 'os llamasteis', 'se llamaron'],
-      imperfecto: ['me llamaba', 'te llamabas', 'se llamaba', 'nos llamábamos', 'os llamabais', 'se llamaban'],
-      futuro: ['me llamaré', 'te llamarás', 'se llamará', 'nos llamaremos', 'os llamaréis', 'se llamarán']
-    }
+    conjugations: buildRegularConjugations('llamarse')
   },
   levantarse: {
     infinitive: 'levantarse',
     meaning: '起床，站起来',
     category: 'reflexive',
+    tier: 'common',
     badge: '自复动词 (-se)',
     tip: '日常作息高频自复动词：自复代词（me/te/se/nos/os/se）+ levantar 的规则变位。',
-    conjugations: {
-      presente: ['me levanto', 'te levantas', 'se levanta', 'nos levantamos', 'os levantáis', 'se levantan'],
-      indefinido: ['me levanté', 'te levantaste', 'se levantó', 'nos levantamos', 'os levantasteis', 'se levantaron'],
-      imperfecto: ['me levantaba', 'te levantabas', 'se levantaba', 'nos levantábamos', 'os levantabais', 'se levantaban'],
-      futuro: ['me levantaré', 'te levantarás', 'se levantará', 'nos levantaremos', 'os levantaréis', 'se levantarán']
-    }
+    conjugations: buildRegularConjugations('levantarse')
   },
   acostarse: {
     infinitive: 'acostarse',
     meaning: '上床睡觉，躺下',
     category: 'reflexive',
+    tier: 'common',
     badge: '自复动词 + o→ue',
     tip: '既是自复动词（加 me/te/se...），现在时又有 o→ue 词干变化（me acuesto，但 nos acostamos）。',
     conjugations: {
@@ -554,14 +570,477 @@ const VERBS = {
       imperfecto: ['me acostaba', 'te acostabas', 'se acostaba', 'nos acostábamos', 'os acostabais', 'se acostaban'],
       futuro: ['me acostaré', 'te acostarás', 'se acostará', 'nos acostaremos', 'os acostaréis', 'se acostarán']
     }
+  },
+
+  // ---------- EXTENDED: Regular -ar (30 verbs) ----------
+  caminar: regularVerb('caminar', '走路，散步', '完全规则的 -ar 动词，词干 camin-。'),
+  bailar: regularVerb('bailar', '跳舞', '完全规则的 -ar 动词，词干 bail-。'),
+  cantar: regularVerb('cantar', '唱歌', '完全规则的 -ar 动词，词干 cant-。'),
+  nadar: regularVerb('nadar', '游泳', '完全规则的 -ar 动词，词干 nad-。'),
+  desayunar: regularVerb('desayunar', '吃早饭', '日常三餐动词之一，完全规则的 -ar 动词。'),
+  cenar: regularVerb('cenar', '吃晚饭', '西班牙晚饭通常在 9–10 点，完全规则的 -ar 动词。'),
+  mirar: regularVerb('mirar', '看，注视', '强调“有意识地看/盯着看”，完全规则的 -ar 动词。'),
+  esperar: regularVerb('esperar', '等待，希望', '既有“等人/等车”也有“希望”之意，完全规则。'),
+  necesitar: regularVerb('necesitar', '需要', '高频实用动词，后面可直接接名词或动词原形，完全规则。'),
+  ayudar: regularVerb('ayudar', '帮助', '完全规则的 -ar 动词，常搭配介词 a（ayudar a alguien）。'),
+  preguntar: regularVerb('preguntar', '提问，询问', '完全规则的 -ar 动词，词干 pregunt-。'),
+  contestar: regularVerb('contestar', '回答，回复', '完全规则的 -ar 动词，与 responder 近义。'),
+  llevar: regularVerb('llevar', '携带，穿着，带去', '既可表示“带东西”，也常表示“穿着某件衣服”，完全规则。'),
+  usar: regularVerb('usar', '使用，运用', '完全规则的 -ar 动词，词干 us-。'),
+  visitar: regularVerb('visitar', '拜访，参观', '完全规则的 -ar 动词，旅行与社交高频词。'),
+  invitar: regularVerb('invitar', '邀请，请客', '完全规则的 -ar 动词，常搭配 a（invitar a cenar 请吃晚饭）。'),
+  ganar: regularVerb('ganar', '赢，赚取', '可表示“赢得比赛”或“赚钱”，完全规则。'),
+  gastar: regularVerb('gastar', '花费，消耗', '表示花钱或花时间，完全规则的 -ar 动词。'),
+  olvidar: regularVerb('olvidar', '忘记', '完全规则的 -ar 动词，词干 olvid-。'),
+  limpiar: regularVerb('limpiar', '打扫，清洁', '完全规则的 -ar 动词，注意现在时不加重音（limpio, limpias...）。'),
+  preparar: regularVerb('preparar', '准备，调制', '完全规则的 -ar 动词，常用于准备饭菜或考试。'),
+  terminar: regularVerb('terminar', '结束，完成', '完全规则的 -ar 动词，与 empezar 反义。'),
+  entrar: regularVerb('entrar', '进入，进去', '完全规则的 -ar 动词，常搭配介词 en（entrar en la casa）。'),
+  buscar: regularVerb('buscar', '寻找，搜索', '现在时规则；简单过去时 yo 为保持 /k/ 音将 c 变为 qu → busqué。'),
+  practicar: regularVerb('practicar', '练习，从事（运动）', '现在时规则；简单过去时 yo 为 c→qu → practiqué。'),
+  explicar: regularVerb('explicar', '解释，说明', '现在时规则；简单过去时 yo 为 c→qu → expliqué。'),
+  tocar: regularVerb('tocar', '弹奏（乐器），触摸', '现在时规则；简单过去时 yo 为 c→qu → toqué。'),
+  llegar: regularVerb('llegar', '到达，抵达', '现在时规则；简单过去时 yo 为保持 /g/ 音将 g 变为 gu → llegué。'),
+  pagar: regularVerb('pagar', '付款，支付', '现在时规则；简单过去时 yo 为 g→gu → pagué。'),
+  organizar: regularVerb('organizar', '组织，安排', '现在时规则；简单过去时 yo 在 e 前将 z 变为 c → organicé。'),
+
+  // ---------- EXTENDED: Regular -er & -ir (14 verbs) ----------
+  correr: regularVerb('correr', '跑，跑步', '完全规则的 -er 动词，词干 corr-。'),
+  vender: regularVerb('vender', '卖，出售', '完全规则的 -er 动词，与 comprar 反义。'),
+  responder: regularVerb('responder', '回答，回应', '完全规则的 -er 动词，词干 respond-。'),
+  comprender: regularVerb('comprender', '理解，明白', '完全规则的 -er 动词，与 entender 近义但无词干变化。'),
+  prometer: regularVerb('prometer', '承诺，保证', '完全规则的 -er 动词，词干 promet-。'),
+  romper: regularVerb('romper', '打破，弄坏', '四个常用时态均完全规则的 -er 动词。'),
+  creer: {
+    infinitive: 'creer',
+    meaning: '相信，认为',
+    category: 'regular',
+    tier: 'extended',
+    badge: '-er 动词（过去时拼写变化）',
+    tip: '与 leer 相同：现在时规则（creo...）；简单过去时第三人称 i→y（creyó, creyeron）。',
+    conjugations: {
+      presente: ['creo', 'crees', 'cree', 'creemos', 'creéis', 'creen'],
+      indefinido: ['creí', 'creíste', 'creyó', 'creímos', 'creísteis', 'creyeron'],
+      imperfecto: ['creía', 'creías', 'creía', 'creíamos', 'creíais', 'creían'],
+      futuro: ['creeré', 'creerás', 'creerá', 'creeremos', 'creeréis', 'creerán']
+    }
+  },
+  subir: regularVerb('subir', '上去，登上，上传', '完全规则的 -ir 动词，词干 sub-。'),
+  decidir: regularVerb('decidir', '决定', '完全规则的 -ir 动词，词干 decid-。'),
+  compartir: regularVerb('compartir', '分享，合用', '完全规则的 -ir 动词，日常与网络社交高频词。'),
+  recibir: regularVerb('recibir', '收到，接收，接待', '完全规则的 -ir 动词，词干 recib-。'),
+  permitir: regularVerb('permitir', '允许，准许', '完全规则的 -ir 动词，词干 permit-。'),
+  asistir: regularVerb('asistir', '出席，参加', '完全规则的 -ir 动词，常搭配介词 a（asistir a clase 上课）。'),
+  describir: regularVerb('describir', '描述，形容', '四个常用时态均完全规则的 -ir 动词，与 escribir 变位一致。'),
+
+  // ---------- EXTENDED: Stem-changing (14 verbs) ----------
+  pensar: {
+    infinitive: 'pensar',
+    meaning: '思考，认为，打算',
+    category: 'stem',
+    tier: 'extended',
+    badge: '词干变化 e→ie',
+    tip: '现在时 e→ie（pienso, piensas...；pensamos 不变），其余三个时态均规则！',
+    conjugations: {
+      presente: ['pienso', 'piensas', 'piensa', 'pensamos', 'pensáis', 'piensan'],
+      indefinido: ['pensé', 'pensaste', 'pensó', 'pensamos', 'pensasteis', 'pensaron'],
+      imperfecto: ['pensaba', 'pensabas', 'pensaba', 'pensábamos', 'pensabais', 'pensaban'],
+      futuro: ['pensaré', 'pensarás', 'pensará', 'pensaremos', 'pensaréis', 'pensarán']
+    }
+  },
+  cerrar: {
+    infinitive: 'cerrar',
+    meaning: '关闭，关门',
+    category: 'stem',
+    tier: 'extended',
+    badge: '词干变化 e→ie',
+    tip: '与 abrir 反义。现在时 e→ie（cierro...；cerramos 不变），过去/将来时全规则。',
+    conjugations: {
+      presente: ['cierro', 'cierras', 'cierra', 'cerramos', 'cerráis', 'cierran'],
+      indefinido: ['cerré', 'cerraste', 'cerró', 'cerramos', 'cerrasteis', 'cerraron'],
+      imperfecto: ['cerraba', 'cerrabas', 'cerraba', 'cerrábamos', 'cerrabais', 'cerraban'],
+      futuro: ['cerraré', 'cerrarás', 'cerrará', 'cerraremos', 'cerraréis', 'cerrarán']
+    }
+  },
+  entender: {
+    infinitive: 'entender',
+    meaning: '理解，听懂',
+    category: 'stem',
+    tier: 'extended',
+    badge: '词干变化 e→ie',
+    tip: '现在时第二个 e→ie（entiendo...；entendemos 不变），其余时态完全规则。',
+    conjugations: {
+      presente: ['entiendo', 'entiendes', 'entiende', 'entendemos', 'entendéis', 'entienden'],
+      indefinido: ['entendí', 'entendiste', 'entendió', 'entendimos', 'entendisteis', 'entendieron'],
+      imperfecto: ['entendía', 'entendías', 'entendía', 'entendíamos', 'entendíais', 'entendían'],
+      futuro: ['entenderé', 'entenderás', 'entenderá', 'entenderemos', 'entenderéis', 'entenderán']
+    }
+  },
+  perder: {
+    infinitive: 'perder',
+    meaning: '丢失，输掉，错过',
+    category: 'stem',
+    tier: 'extended',
+    badge: '词干变化 e→ie',
+    tip: '现在时 e→ie（pierdo...；perdemos 不变），其余时态完全规则。',
+    conjugations: {
+      presente: ['pierdo', 'pierdes', 'pierde', 'perdemos', 'perdéis', 'pierden'],
+      indefinido: ['perdí', 'perdiste', 'perdió', 'perdimos', 'perdisteis', 'perdieron'],
+      imperfecto: ['perdía', 'perdías', 'perdía', 'perdíamos', 'perdíais', 'perdían'],
+      futuro: ['perderé', 'perderás', 'perderá', 'perderemos', 'perderéis', 'perderán']
+    }
+  },
+  preferir: {
+    infinitive: 'preferir',
+    meaning: '更喜欢，宁愿',
+    category: 'stem',
+    tier: 'extended',
+    badge: '词干变化 e→ie',
+    tip: '现在时第二个 e→ie（prefiero...；preferimos 不变）；简单过去时第三人称 e→i（prefirió, prefirieron）。',
+    conjugations: {
+      presente: ['prefiero', 'prefieres', 'prefiere', 'preferimos', 'preferís', 'prefieren'],
+      indefinido: ['preferí', 'preferiste', 'prefirió', 'preferimos', 'preferisteis', 'prefirieron'],
+      imperfecto: ['prefería', 'preferías', 'prefería', 'preferíamos', 'preferíais', 'preferían'],
+      futuro: ['preferiré', 'preferirás', 'preferirá', 'preferiremos', 'preferiréis', 'preferirán']
+    }
+  },
+  sentir: {
+    infinitive: 'sentir',
+    meaning: '感觉，感到，遗憾',
+    category: 'stem',
+    tier: 'extended',
+    badge: '词干变化 e→ie',
+    tip: 'lo siento（抱歉）就来自这个词！现在时 e→ie；简单过去时第三人称 e→i（sintió, sintieron）。',
+    conjugations: {
+      presente: ['siento', 'sientes', 'siente', 'sentimos', 'sentís', 'sienten'],
+      indefinido: ['sentí', 'sentiste', 'sintió', 'sentimos', 'sentisteis', 'sintieron'],
+      imperfecto: ['sentía', 'sentías', 'sentía', 'sentíamos', 'sentíais', 'sentían'],
+      futuro: ['sentiré', 'sentirás', 'sentirá', 'sentiremos', 'sentiréis', 'sentirán']
+    }
+  },
+  encontrar: {
+    infinitive: 'encontrar',
+    meaning: '找到，遇见，觉得',
+    category: 'stem',
+    tier: 'extended',
+    badge: '词干变化 o→ue',
+    tip: '现在时 o→ue（encuentro...；encontramos 不变），其余时态完全规则。',
+    conjugations: {
+      presente: ['encuentro', 'encuentras', 'encuentra', 'encontramos', 'encontráis', 'encuentran'],
+      indefinido: ['encontré', 'encontraste', 'encontró', 'encontramos', 'encontrasteis', 'encontraron'],
+      imperfecto: ['encontraba', 'encontrabas', 'encontraba', 'encontrábamos', 'encontrabais', 'encontraban'],
+      futuro: ['encontraré', 'encontrarás', 'encontrará', 'encontraremos', 'encontraréis', 'encontrarán']
+    }
+  },
+  recordar: {
+    infinitive: 'recordar',
+    meaning: '记得，回忆起',
+    category: 'stem',
+    tier: 'extended',
+    badge: '词干变化 o→ue',
+    tip: '现在时 o→ue（recuerdo...；recordamos 不变），与 olvidar 反义。',
+    conjugations: {
+      presente: ['recuerdo', 'recuerdas', 'recuerda', 'recordamos', 'recordáis', 'recuerdan'],
+      indefinido: ['recordé', 'recordaste', 'recordó', 'recordamos', 'recordasteis', 'recordaron'],
+      imperfecto: ['recordaba', 'recordabas', 'recordaba', 'recordábamos', 'recordabais', 'recordaban'],
+      futuro: ['recordaré', 'recordarás', 'recordará', 'recordaremos', 'recordaréis', 'recordarán']
+    }
+  },
+  almorzar: {
+    infinitive: 'almorzar',
+    meaning: '吃午饭',
+    category: 'stem',
+    tier: 'extended',
+    badge: '词干变化 o→ue',
+    tip: '现在时 o→ue（almuerzo...；almorzamos 不变）；简单过去时 yo 为 z→c（almorcé）。',
+    conjugations: {
+      presente: ['almuerzo', 'almuerzas', 'almuerza', 'almorzamos', 'almorzáis', 'almuerzan'],
+      indefinido: ['almorcé', 'almorzaste', 'almorzó', 'almorzamos', 'almorzasteis', 'almorzaron'],
+      imperfecto: ['almorzaba', 'almorzabas', 'almorzaba', 'almorzábamos', 'almorzabais', 'almorzaban'],
+      futuro: ['almorzaré', 'almorzarás', 'almorzará', 'almorzaremos', 'almorzaréis', 'almorzarán']
+    }
+  },
+  costar: {
+    infinitive: 'costar',
+    meaning: '花费（多少钱），费力',
+    category: 'stem',
+    tier: 'extended',
+    badge: '词干变化 o→ue',
+    tip: '购物必学！¿Cuánto cuesta?（多少钱？）；现在时 o→ue（cuesta, cuestan）。',
+    conjugations: {
+      presente: ['cuesto', 'cuestas', 'cuesta', 'costamos', 'costáis', 'cuestan'],
+      indefinido: ['costé', 'costaste', 'costó', 'costamos', 'costasteis', 'costaron'],
+      imperfecto: ['costaba', 'costabas', 'costaba', 'costábamos', 'costabais', 'costaban'],
+      futuro: ['costaré', 'costarás', 'costará', 'costaremos', 'costaréis', 'costarán']
+    }
+  },
+  mostrar: {
+    infinitive: 'mostrar',
+    meaning: '展示，给看，表明',
+    category: 'stem',
+    tier: 'extended',
+    badge: '词干变化 o→ue',
+    tip: '现在时 o→ue（muestro...；mostramos 不变），其余三个时态均规则。',
+    conjugations: {
+      presente: ['muestro', 'muestras', 'muestra', 'mostramos', 'mostráis', 'muestran'],
+      indefinido: ['mostré', 'mostraste', 'mostró', 'mostramos', 'mostrasteis', 'mostraron'],
+      imperfecto: ['mostraba', 'mostrabas', 'mostraba', 'mostrábamos', 'mostrabais', 'mostraban'],
+      futuro: ['mostraré', 'mostrarás', 'mostrará', 'mostraremos', 'mostraréis', 'mostrarán']
+    }
+  },
+  probar: {
+    infinitive: 'probar',
+    meaning: '品尝，尝试，试穿',
+    category: 'stem',
+    tier: 'extended',
+    badge: '词干变化 o→ue',
+    tip: '现在时 o→ue（pruebo...；probamos 不变），美食与购物场景极常用。',
+    conjugations: {
+      presente: ['pruebo', 'pruebas', 'prueba', 'probamos', 'probáis', 'prueban'],
+      indefinido: ['probé', 'probaste', 'probó', 'probamos', 'probasteis', 'probaron'],
+      imperfecto: ['probaba', 'probabas', 'probaba', 'probábamos', 'probabais', 'probaban'],
+      futuro: ['probaré', 'probarás', 'probará', 'probaremos', 'probaréis', 'probarán']
+    }
+  },
+  servir: {
+    infinitive: 'servir',
+    meaning: '服务，上菜，有用',
+    category: 'stem',
+    tier: 'extended',
+    badge: '词干变化 e→i',
+    tip: '与 pedir 同类：现在时 e→i（sirvo...；servimos 不变）；简单过去时第三人称 e→i（sirvió, sirvieron）。',
+    conjugations: {
+      presente: ['sirvo', 'sirves', 'sirve', 'servimos', 'servís', 'sirven'],
+      indefinido: ['serví', 'serviste', 'sirvió', 'servimos', 'servisteis', 'sirvieron'],
+      imperfecto: ['servía', 'servías', 'servía', 'servíamos', 'servíais', 'servían'],
+      futuro: ['serviré', 'servirás', 'servirá', 'serviremos', 'serviréis', 'servirán']
+    }
+  },
+  repetir: {
+    infinitive: 'repetir',
+    meaning: '重复，再来一份',
+    category: 'stem',
+    tier: 'extended',
+    badge: '词干变化 e→i',
+    tip: '现在时第二个 e→i（repito...；repetimos 不变）；简单过去时第三人称 e→i（repitió, repitieron）。',
+    conjugations: {
+      presente: ['repito', 'repites', 'repite', 'repetimos', 'repetís', 'repiten'],
+      indefinido: ['repetí', 'repetiste', 'repitió', 'repetimos', 'repetisteis', 'repitieron'],
+      imperfecto: ['repetía', 'repetías', 'repetía', 'repetíamos', 'repetíais', 'repetían'],
+      futuro: ['repetiré', 'repetirás', 'repetirá', 'repetiremos', 'repetiréis', 'repetirán']
+    }
+  },
+
+  // ---------- EXTENDED: Irregular (10 verbs) ----------
+  poner: {
+    infinitive: 'poner',
+    meaning: '放，放置，摆（餐具）',
+    category: 'irregular',
+    tier: 'extended',
+    badge: '高频不规则',
+    tip: '现在时 yo 为 pongo（-go 动词）；简单过去时词干 pus-；将来时词干 pondr-。',
+    conjugations: {
+      presente: ['pongo', 'pones', 'pone', 'ponemos', 'ponéis', 'ponen'],
+      indefinido: ['puse', 'pusiste', 'puso', 'pusimos', 'pusisteis', 'pusieron'],
+      imperfecto: ['ponía', 'ponías', 'ponía', 'poníamos', 'poníais', 'ponían'],
+      futuro: ['pondré', 'pondrás', 'pondrá', 'pondremos', 'pondréis', 'pondrán']
+    }
+  },
+  traer: {
+    infinitive: 'traer',
+    meaning: '带来，拿来',
+    category: 'irregular',
+    tier: 'extended',
+    badge: '高频不规则',
+    tip: '现在时 yo 为 traigo；简单过去时词干 traj-（第三人称复数 trajeron 无 i）。',
+    conjugations: {
+      presente: ['traigo', 'traes', 'trae', 'traemos', 'traéis', 'traen'],
+      indefinido: ['traje', 'trajiste', 'trajo', 'trajimos', 'trajisteis', 'trajeron'],
+      imperfecto: ['traía', 'traías', 'traía', 'traíamos', 'traíais', 'traían'],
+      futuro: ['traeré', 'traerás', 'traerá', 'traeremos', 'traeréis', 'traerán']
+    }
+  },
+  conocer: {
+    infinitive: 'conocer',
+    meaning: '认识（人），熟悉（地方）',
+    category: 'irregular',
+    tier: 'extended',
+    badge: '第一人称不规则 (-zco)',
+    tip: '与 saber 区分：conocer 指认识人或熟悉地方。仅现在时 yo 为 conozco，其余各时态全规则！',
+    conjugations: {
+      presente: ['conozco', 'conoces', 'conoce', 'conocemos', 'conocéis', 'conocen'],
+      indefinido: ['conocí', 'conociste', 'conoció', 'conocimos', 'conocisteis', 'conocieron'],
+      imperfecto: ['conocía', 'conocías', 'conocía', 'conocíamos', 'conocíais', 'conocían'],
+      futuro: ['conoceré', 'conocerás', 'conocerá', 'conoceremos', 'conoceréis', 'conocerán']
+    }
+  },
+  'oír': {
+    infinitive: 'oír',
+    meaning: '听见，听到',
+    category: 'irregular',
+    tier: 'extended',
+    badge: '高频不规则',
+    tip: '现在时 yo 为 oigo，tú/él/ellos 加 y（oyes, oye, oyen）；过去时第三人称 oyó, oyeron。',
+    conjugations: {
+      presente: ['oigo', 'oyes', 'oye', 'oímos', 'oís', 'oyen'],
+      indefinido: ['oí', 'oíste', 'oyó', 'oímos', 'oísteis', 'oyeron'],
+      imperfecto: ['oía', 'oías', 'oía', 'oíamos', 'oíais', 'oían'],
+      futuro: ['oiré', 'oirás', 'oirá', 'oiremos', 'oiréis', 'oirán']
+    }
+  },
+  caer: {
+    infinitive: 'caer',
+    meaning: '掉落，落下，摔倒',
+    category: 'irregular',
+    tier: 'extended',
+    badge: '高频不规则',
+    tip: '现在时仅 yo 为 caigo；简单过去时第三人称 i→y（cayó, cayeron）。',
+    conjugations: {
+      presente: ['caigo', 'caes', 'cae', 'caemos', 'caéis', 'caen'],
+      indefinido: ['caí', 'caíste', 'cayó', 'caímos', 'caísteis', 'cayeron'],
+      imperfecto: ['caía', 'caías', 'caía', 'caíamos', 'caíais', 'caían'],
+      futuro: ['caeré', 'caerás', 'caerá', 'caeremos', 'caeréis', 'caerán']
+    }
+  },
+  seguir: {
+    infinitive: 'seguir',
+    meaning: '继续，跟随，关注',
+    category: 'irregular',
+    tier: 'extended',
+    badge: '词干变化 + 拼写变化',
+    tip: '现在时 e→i 且 yo 省去 u（sigo, sigues...；seguimos 不变）；过去时第三人称 siguió, siguieron。',
+    conjugations: {
+      presente: ['sigo', 'sigues', 'sigue', 'seguimos', 'seguís', 'siguen'],
+      indefinido: ['seguí', 'seguiste', 'siguió', 'seguimos', 'seguisteis', 'siguieron'],
+      imperfecto: ['seguía', 'seguías', 'seguía', 'seguíamos', 'seguíais', 'seguían'],
+      futuro: ['seguiré', 'seguirás', 'seguirá', 'seguiremos', 'seguiréis', 'seguirán']
+    }
+  },
+  conducir: {
+    infinitive: 'conducir',
+    meaning: '驾驶，开车',
+    category: 'irregular',
+    tier: 'extended',
+    badge: '-ducir 不规则动词',
+    tip: '现在时 yo 为 conduzco；简单过去时词干变为 conduj-（conduje... condujeron）。',
+    conjugations: {
+      presente: ['conduzco', 'conduces', 'conduce', 'conducimos', 'conducís', 'conducen'],
+      indefinido: ['conduje', 'condujiste', 'condujo', 'condujimos', 'condujisteis', 'condujeron'],
+      imperfecto: ['conducía', 'conducías', 'conducía', 'conducíamos', 'conducíais', 'conducían'],
+      futuro: ['conduciré', 'conducirás', 'conducirá', 'conduciremos', 'conduciréis', 'conducirán']
+    }
+  },
+  traducir: {
+    infinitive: 'traducir',
+    meaning: '翻译',
+    category: 'irregular',
+    tier: 'extended',
+    badge: '-ducir 不规则动词',
+    tip: '与 conducir 规律完全相同：现在时 yo 为 traduzco，简单过去时词干 traduj-。',
+    conjugations: {
+      presente: ['traduzco', 'traduces', 'traduce', 'traducimos', 'traducís', 'traducen'],
+      indefinido: ['traduje', 'tradujiste', 'tradujo', 'tradujimos', 'tradujisteis', 'tradujeron'],
+      imperfecto: ['traducía', 'traducías', 'traducía', 'traducíamos', 'traducíais', 'traducían'],
+      futuro: ['traduciré', 'traducirás', 'traducirá', 'traduciremos', 'traduciréis', 'traducirán']
+    }
+  },
+  construir: {
+    infinitive: 'construir',
+    meaning: '建造，构建',
+    category: 'irregular',
+    tier: 'extended',
+    badge: '-uir 增音 y 动词',
+    tip: '以 -uir 结尾的动词在现在时靴形位置插入 y（construyo, construyes...）；过去时第三人称 construyó。',
+    conjugations: {
+      presente: ['construyo', 'construyes', 'construye', 'construimos', 'construís', 'construyen'],
+      indefinido: ['construí', 'construiste', 'construyó', 'construimos', 'construisteis', 'construyeron'],
+      imperfecto: ['construía', 'construías', 'construía', 'construíamos', 'construíais', 'construían'],
+      futuro: ['construiré', 'construirás', 'construirá', 'construiremos', 'construiréis', 'construirán']
+    }
+  },
+  valer: {
+    infinitive: 'valer',
+    meaning: '值（多少钱），有价值',
+    category: 'irregular',
+    tier: 'extended',
+    badge: '不规则动词',
+    tip: '现在时仅 yo 为 valgo；将来时词干 valdr-（与 salir / tener 同类）。',
+    conjugations: {
+      presente: ['valgo', 'vales', 'vale', 'valemos', 'valéis', 'valen'],
+      indefinido: ['valí', 'valiste', 'valió', 'valimos', 'valisteis', 'valieron'],
+      imperfecto: ['valía', 'valías', 'valía', 'valíamos', 'valíais', 'valían'],
+      futuro: ['valdré', 'valdrás', 'valdrá', 'valdremos', 'valdréis', 'valdrán']
+    }
+  },
+
+  // ---------- EXTENDED: Reflexive (8 verbs) ----------
+  ducharse: regularVerb('ducharse', '淋浴，洗澡', '完全规则的自复动词：me/te/se/nos/os/se + duchar 变位。'),
+  lavarse: regularVerb('lavarse', '洗（手/脸），洗漱', '完全规则的自复动词（如 lavarse las manos 洗手）。'),
+  quedarse: regularVerb('quedarse', '留下，待在（某处）', '完全规则的自复动词（如 quedarse en casa 待在家里）。'),
+  casarse: regularVerb('casarse', '结婚', '完全规则的自复动词，常搭配 con（casarse con alguien）。'),
+  despertarse: {
+    infinitive: 'despertarse',
+    meaning: '醒来，睡醒',
+    category: 'reflexive',
+    tier: 'extended',
+    badge: '自复动词 + e→ie',
+    tip: '自复代词 + 现在时 e→ie（me despierto...，但 nos despertamos 不变）。',
+    conjugations: {
+      presente: ['me despierto', 'te despiertas', 'se despierta', 'nos despertamos', 'os despertáis', 'se despiertan'],
+      indefinido: ['me desperté', 'te despertaste', 'se despertó', 'nos despertamos', 'os despertasteis', 'se despertaron'],
+      imperfecto: ['me despertaba', 'te despertabas', 'se despertaba', 'nos despertábamos', 'os despertabais', 'se despertaban'],
+      futuro: ['me despertaré', 'te despertarás', 'se despertará', 'nos despertaremos', 'os despertaréis', 'se despertarán']
+    }
+  },
+  sentarse: {
+    infinitive: 'sentarse',
+    meaning: '坐下',
+    category: 'reflexive',
+    tier: 'extended',
+    badge: '自复动词 + e→ie',
+    tip: '自复代词 + 现在时 e→ie（me siento...；注意与 sentir“感觉”区分语境！）。',
+    conjugations: {
+      presente: ['me siento', 'te sientas', 'se sienta', 'nos sentamos', 'os sentáis', 'se sientan'],
+      indefinido: ['me senté', 'te sentaste', 'se sentó', 'nos sentamos', 'os sentasteis', 'se sentaron'],
+      imperfecto: ['me sentaba', 'te sentabas', 'se sentaba', 'nos sentábamos', 'os sentabais', 'se sentaban'],
+      futuro: ['me sentaré', 'te sentarás', 'se sentará', 'nos sentaremos', 'os sentaréis', 'se sentarán']
+    }
+  },
+  vestirse: {
+    infinitive: 'vestirse',
+    meaning: '穿衣服',
+    category: 'reflexive',
+    tier: 'extended',
+    badge: '自复动词 + e→i',
+    tip: '自复代词 + 现在时 e→i（me visto...；nos vestimos 不变）；过去时第三人称 se vistió, se vistieron。',
+    conjugations: {
+      presente: ['me visto', 'te vistes', 'se viste', 'nos vestimos', 'os vestís', 'se visten'],
+      indefinido: ['me vestí', 'te vestiste', 'se vistió', 'nos vestimos', 'os vestisteis', 'se vistieron'],
+      imperfecto: ['me vestía', 'te vestías', 'se vestía', 'nos vestíamos', 'os vestíais', 'se vestían'],
+      futuro: ['me vestiré', 'te vestirás', 'se vestirá', 'nos vestiremos', 'os vestiréis', 'se vestirán']
+    }
+  },
+  divertirse: {
+    infinitive: 'divertirse',
+    meaning: '玩得开心，自娱自乐',
+    category: 'reflexive',
+    tier: 'extended',
+    badge: '自复动词 + e→ie',
+    tip: '现在时 e→ie（me divierto...；nos divertimos 不变）；过去时第三人称 e→i（se divirtió, se divirtieron）。',
+    conjugations: {
+      presente: ['me divierto', 'te diviertes', 'se divierte', 'nos divertimos', 'os divertís', 'se divierten'],
+      indefinido: ['me divertí', 'te divertiste', 'se divirtió', 'nos divertimos', 'os divertisteis', 'se divirtieron'],
+      imperfecto: ['me divertía', 'te divertías', 'se divertía', 'nos divertíamos', 'os divertíais', 'se divertían'],
+      futuro: ['me divertiré', 'te divertirás', 'se divertirá', 'nos divertiremos', 'os divertiréis', 'se divertirán']
+    }
   }
 };
 
 // =====================================================
-// SENTENCE FILL-IN-THE-BLANK BANK (100+ curated sentences)
+// SENTENCE FILL-IN-THE-BLANK BANK (182 curated sentences)
 // =====================================================
 const SENTENCES = [
-  // ---------- PRESENTE: Regular -ar ----------
+  // ---------- PRESENTE: Common Regular -ar ----------
   {
     id: 'p_hablar_1',
     verb: 'hablar',
@@ -713,7 +1192,7 @@ const SENTENCES = [
     note: '-ar 规则动词 vosotros 词尾为 -áis（别忘重音 á）→ tomáis。'
   },
 
-  // ---------- PRESENTE: Regular -er & -ir ----------
+  // ---------- PRESENTE: Common Regular -er & -ir ----------
   {
     id: 'p_comer_1',
     verb: 'comer',
@@ -845,7 +1324,7 @@ const SENTENCES = [
     note: 'abrir 对应复数第三人称加 -en → abren。'
   },
 
-  // ---------- PRESENTE: Stem-changing ----------
+  // ---------- PRESENTE: Common Stem-changing ----------
   {
     id: 'p_querer_1',
     verb: 'querer',
@@ -977,7 +1456,7 @@ const SENTENCES = [
     note: 'volver 现在时 o→ue：yo → vuelvo。'
   },
 
-  // ---------- PRESENTE: High-frequency Irregular ----------
+  // ---------- PRESENTE: Common Irregular ----------
   {
     id: 'p_ser_1',
     verb: 'ser',
@@ -1229,7 +1708,7 @@ const SENTENCES = [
     note: 'dar 在 yo 变为 doy（与 soy, estoy, voy 并称四大 -oy 动词）。'
   },
 
-  // ---------- PRESENTE: Reflexive ----------
+  // ---------- PRESENTE: Common Reflexive ----------
   {
     id: 'p_llamarse_1',
     verb: 'llamarse',
@@ -1291,7 +1770,429 @@ const SENTENCES = [
     note: '第三人称复数自复代词 se + acuestan → se acuestan。'
   },
 
-  // ---------- INDEFINIDO (简单过去时) ----------
+  // ---------- PRESENTE: Extended Verbs (40+ new sentences) ----------
+  {
+    id: 'p_caminar_1',
+    verb: 'caminar',
+    tense: 'presente',
+    personIndex: 0,
+    sentence: 'Todas las tardes ___ treinta minutos por el parque.',
+    zh: '每天下午我都在公园里散步三十分钟。',
+    subjectHint: '主语：yo（我）',
+    note: 'caminar 是规则 -ar 动词，yo → camino。'
+  },
+  {
+    id: 'p_bailar_1',
+    verb: 'bailar',
+    tense: 'presente',
+    personIndex: 5,
+    sentence: 'Ellos ___ salsa muy bien en todas las fiestas.',
+    zh: '他们在每场派对上都跳萨尔萨舞跳得很好。',
+    subjectHint: '主语：ellos（他们）',
+    note: 'bailar 对应 ellos 加 -an → bailan。'
+  },
+  {
+    id: 'p_cantar_1',
+    verb: 'cantar',
+    tense: 'presente',
+    personIndex: 2,
+    sentence: 'Mi hermana ___ en la ducha todas las mañanas.',
+    zh: '我妹妹每天早上都在淋浴时唱歌。',
+    subjectHint: '主语：mi hermana（她 = ella）',
+    note: 'cantar 第三人称单数加 -a → canta。'
+  },
+  {
+    id: 'p_nadar_1',
+    verb: 'nadar',
+    tense: 'presente',
+    personIndex: 3,
+    sentence: 'En verano nosotros ___ en la piscina municipal.',
+    zh: '夏天我们在市政游泳池游泳。',
+    subjectHint: '主语：nosotros（我们）',
+    note: 'nadar 对应 nosotros 加 -amos → nadamos。'
+  },
+  {
+    id: 'p_desayunar_1',
+    verb: 'desayunar',
+    tense: 'presente',
+    personIndex: 0,
+    sentence: 'Normalmente ___ tostadas con tomate y aceite de oliva.',
+    zh: '我通常早餐吃番茄橄榄油烤面包。',
+    subjectHint: '主语：yo（我）',
+    note: 'desayunar 是规则 -ar 动词，yo → desayuno。'
+  },
+  {
+    id: 'p_cenar_1',
+    verb: 'cenar',
+    tense: 'presente',
+    personIndex: 3,
+    sentence: 'Hoy nosotros ___ en casa de unos amigos.',
+    zh: '今天我们在几个朋友家吃晚饭。',
+    subjectHint: '主语：nosotros（我们）',
+    note: 'cenar 对应 nosotros 加 -amos → cenamos。'
+  },
+  {
+    id: 'p_necesitar_1',
+    verb: 'necesitar',
+    tense: 'presente',
+    personIndex: 0,
+    sentence: '___ un diccionario para traducir este texto.',
+    zh: '我需要一本词典来翻译这段文字。',
+    subjectHint: '主语：yo（我）',
+    note: 'necesitar 对应 yo 加 -o → necesito。'
+  },
+  {
+    id: 'p_esperar_1',
+    verb: 'esperar',
+    tense: 'presente',
+    personIndex: 1,
+    sentence: '¿A quién ___ tú en la puerta?',
+    zh: '你在门口等谁呢？',
+    subjectHint: '主语：tú（你）',
+    note: 'esperar 对应 tú 加 -as → esperas。'
+  },
+  {
+    id: 'p_ayudar_1',
+    verb: 'ayudar',
+    tense: 'presente',
+    personIndex: 2,
+    sentence: 'Pablo siempre ___ a su abuela con las compras.',
+    zh: '巴勃罗总是帮他奶奶买东西。',
+    subjectHint: '主语：Pablo（他 = él）',
+    note: 'ayudar 第三人称单数加 -a → ayuda。'
+  },
+  {
+    id: 'p_llevar_1',
+    verb: 'llevar',
+    tense: 'presente',
+    personIndex: 2,
+    sentence: 'Hoy Lucía ___ una chaqueta roja muy bonita.',
+    zh: '今天露西亚穿了一件非常漂亮的红夹克。',
+    subjectHint: '主语：Lucía（她 = ella）',
+    note: 'llevar 表示穿着衣服，ella → lleva。'
+  },
+  {
+    id: 'p_buscar_1',
+    verb: 'buscar',
+    tense: 'presente',
+    personIndex: 0,
+    sentence: '___ mis gafas por toda la casa y no las veo.',
+    zh: '我在满屋子找我的眼镜，怎么也看不见。',
+    subjectHint: '主语：yo（我）',
+    note: 'buscar 在现在时完全规则，yo → busco。'
+  },
+  {
+    id: 'p_llegar_1',
+    verb: 'llegar',
+    tense: 'presente',
+    personIndex: 2,
+    sentence: 'El tren de Barcelona ___ a las cinco y media.',
+    zh: '从巴塞罗那来的火车五点半到达。',
+    subjectHint: '主语：el tren（它 = él）',
+    note: 'llegar 现在时规则，第三人称单数 → llega。'
+  },
+  {
+    id: 'p_pagar_1',
+    verb: 'pagar',
+    tense: 'presente',
+    personIndex: 1,
+    sentence: '¿___ tú con tarjeta o en efectivo?',
+    zh: '你用刷卡还是现金付款？',
+    subjectHint: '主语：tú（你）',
+    note: 'pagar 现在时规则，tú → pagas。'
+  },
+  {
+    id: 'p_tocar_1',
+    verb: 'tocar',
+    tense: 'presente',
+    personIndex: 2,
+    sentence: 'Mi vecino ___ el piano todas las tardes.',
+    zh: '我的邻居每天下午都弹钢琴。',
+    subjectHint: '主语：mi vecino（他 = él）',
+    note: 'tocar 表示弹奏乐器，第三人称单数 → toca。'
+  },
+  {
+    id: 'p_correr_1',
+    verb: 'correr',
+    tense: 'presente',
+    personIndex: 0,
+    sentence: 'Tres veces por semana ___ cinco kilómetros.',
+    zh: '我每周跑三次五公里。',
+    subjectHint: '主语：yo（我）',
+    note: 'correr 是规则 -er 动词，yo → corro。'
+  },
+  {
+    id: 'p_vender_1',
+    verb: 'vender',
+    tense: 'presente',
+    personIndex: 5,
+    sentence: 'En esta tienda ___ libros antiguos y mapas.',
+    zh: '这家店卖古书和地图。',
+    subjectHint: '主语：泛指复数（ellos）',
+    note: 'vender 对应 ellos 加 -en → venden。'
+  },
+  {
+    id: 'p_comprender_1',
+    verb: 'comprender',
+    tense: 'presente',
+    personIndex: 0,
+    sentence: 'Ahora ___ mucho mejor las reglas de conjugación.',
+    zh: '现在我更理解动词变位的规则了。',
+    subjectHint: '主语：yo（我）',
+    note: 'comprender 是规则 -er 动词，yo → comprendo。'
+  },
+  {
+    id: 'p_creer_1',
+    verb: 'creer',
+    tense: 'presente',
+    personIndex: 0,
+    sentence: 'Yo ___ que esta película es muy interesante.',
+    zh: '我觉得这部电影非常有意思。',
+    subjectHint: '主语：yo（我）',
+    note: 'creer 现在时完全规则，yo → creo。'
+  },
+  {
+    id: 'p_compartir_1',
+    verb: 'compartir',
+    tense: 'presente',
+    personIndex: 3,
+    sentence: 'Mi compañera y yo ___ un piso en el centro.',
+    zh: '我和我的室友在市中心合租一套公寓。',
+    subjectHint: '主语：mi compañera y yo（= nosotras 我们）',
+    note: 'compartir 是 -ir 规则动词，nosotros/as 加 -imos → compartimos。'
+  },
+  {
+    id: 'p_recibir_1',
+    verb: 'recibir',
+    tense: 'presente',
+    personIndex: 0,
+    sentence: 'Todos los días ___ demasiados correos del trabajo.',
+    zh: '我每天都收到太多工作邮件。',
+    subjectHint: '主语：yo（我）',
+    note: 'recibir 是规则 -ir 动词，yo → recibo。'
+  },
+  {
+    id: 'p_subir_1',
+    verb: 'subir',
+    tense: 'presente',
+    personIndex: 3,
+    sentence: 'Nosotros siempre ___ por las escaleras para hacer ejercicio.',
+    zh: '我们总是走楼梯上去以锻炼身体。',
+    subjectHint: '主语：nosotros（我们）',
+    note: 'subir 是 -ir 规则动词，nosotros → subimos。'
+  },
+  {
+    id: 'p_pensar_1',
+    verb: 'pensar',
+    tense: 'presente',
+    personIndex: 0,
+    sentence: 'Yo ___ viajar a Latinoamérica el año que viene.',
+    zh: '我打算明年去拉丁美洲旅行。',
+    subjectHint: '主语：yo（我）',
+    note: 'pensar 现在时 e→ie：yo → pienso。'
+  },
+  {
+    id: 'p_cerrar_1',
+    verb: 'cerrar',
+    tense: 'presente',
+    personIndex: 2,
+    sentence: 'El museo ___ los lunes por descanso.',
+    zh: '博物馆每周一闭馆休息。',
+    subjectHint: '主语：el museo（它 = él）',
+    note: 'cerrar 现在时 e→ie：第三人称单数 → cierra。'
+  },
+  {
+    id: 'p_entender_1',
+    verb: 'entender',
+    tense: 'presente',
+    personIndex: 1,
+    sentence: '¿___ tú esta pregunta o la repito?',
+    zh: '你听懂这个问题了吗，还是我再重复一遍？',
+    subjectHint: '主语：tú（你）',
+    note: 'entender 现在时 e→ie：tú → entiendes。'
+  },
+  {
+    id: 'p_preferir_1',
+    verb: 'preferir',
+    tense: 'presente',
+    personIndex: 0,
+    sentence: 'Yo ___ el té con limón en lugar de café.',
+    zh: '比起咖啡，我更喜欢柠檬茶。',
+    subjectHint: '主语：yo（我）',
+    note: 'preferir 现在时 e→ie：yo → prefiero。'
+  },
+  {
+    id: 'p_encontrar_1',
+    verb: 'encontrar',
+    tense: 'presente',
+    personIndex: 0,
+    sentence: 'No ___ mi pasaporte y salgo mañana.',
+    zh: '我找不到我的护照了，我明天就要出发。',
+    subjectHint: '主语：yo（我）',
+    note: 'encontrar 现在时 o→ue：yo → encuentro。'
+  },
+  {
+    id: 'p_recordar_1',
+    verb: 'recordar',
+    tense: 'presente',
+    personIndex: 1,
+    sentence: '¿___ tú el nombre de aquel restaurante?',
+    zh: '你还记得那家餐厅的名字吗？',
+    subjectHint: '主语：tú（你）',
+    note: 'recordar 现在时 o→ue：tú → recuerdas。'
+  },
+  {
+    id: 'p_costar_1',
+    verb: 'costar',
+    tense: 'presente',
+    personIndex: 2,
+    sentence: 'Perdón, ¿cuánto ___ esta camiseta?',
+    zh: '请问这件 T 恤多少钱？',
+    subjectHint: '主语：esta camiseta（它 = ella）',
+    note: 'costar 现在时 o→ue：第三人称单数 → cuesta。'
+  },
+  {
+    id: 'p_almorzar_1',
+    verb: 'almorzar',
+    tense: 'presente',
+    personIndex: 3,
+    sentence: 'Los jueves nosotros ___ en la cafetería de la oficina.',
+    zh: '每周四我们在公司食堂吃午饭。',
+    subjectHint: '主语：nosotros（我们）',
+    note: 'almorzar 在 nosotros 不发生 o→ue 变化 → almorzamos。'
+  },
+  {
+    id: 'p_probar_1',
+    verb: 'probar',
+    tense: 'presente',
+    personIndex: 5,
+    sentence: 'Los viajeros siempre ___ la gastronomía local.',
+    zh: '旅行者们总是会品尝当地美食。',
+    subjectHint: '主语：los viajeros（他们 = ellos）',
+    note: 'probar 现在时 o→ue：ellos → prueban。'
+  },
+  {
+    id: 'p_servir_1',
+    verb: 'servir',
+    tense: 'presente',
+    personIndex: 5,
+    sentence: 'En este bar ___ los mejores churros de la ciudad.',
+    zh: '这家店供应全城最棒的西班牙油条。',
+    subjectHint: '主语：泛指复数（ellos）',
+    note: 'servir 现在时 e→i：ellos → sirven。'
+  },
+  {
+    id: 'p_poner_1',
+    verb: 'poner',
+    tense: 'presente',
+    personIndex: 0,
+    sentence: 'Antes de cenar, siempre ___ la mesa.',
+    zh: '晚饭前我总是摆好餐具。',
+    subjectHint: '主语：yo（我）',
+    note: 'poner 在现在时 yo 为 pongo（-go 动词）。'
+  },
+  {
+    id: 'p_traer_1',
+    verb: 'traer',
+    tense: 'presente',
+    personIndex: 0,
+    sentence: 'Yo ___ el postre para la cena de esta noche.',
+    zh: '今晚的晚餐我来带甜点。',
+    subjectHint: '主语：yo（我）',
+    note: 'traer 在现在时 yo 为 traigo。'
+  },
+  {
+    id: 'p_conocer_1',
+    verb: 'conocer',
+    tense: 'presente',
+    personIndex: 0,
+    sentence: 'Yo ___ muy bien el centro histórico de Toledo.',
+    zh: '我非常熟悉托莱多的历史中心。',
+    subjectHint: '主语：yo（我）',
+    note: 'conocer 在现在时 yo 变为 conozco。'
+  },
+  {
+    id: 'p_oir_1',
+    verb: 'oír',
+    tense: 'presente',
+    personIndex: 1,
+    sentence: '¿___ tú esa música que viene de la plaza?',
+    zh: '你听见从广场那边传来的音乐了吗？',
+    subjectHint: '主语：tú（你）',
+    note: 'oír 在现在时 tú 变为 oyes。'
+  },
+  {
+    id: 'p_seguir_1',
+    verb: 'seguir',
+    tense: 'presente',
+    personIndex: 0,
+    sentence: 'Aunque es difícil, yo ___ estudiando todos los días.',
+    zh: '虽然很难，但我还是坚持每天学习。',
+    subjectHint: '主语：yo（我）',
+    note: 'seguir 现在时 yo 变 e→i 且省略 u → sigo。'
+  },
+  {
+    id: 'p_conducir_1',
+    verb: 'conducir',
+    tense: 'presente',
+    personIndex: 0,
+    sentence: 'Yo no ___ por la ciudad, prefiero el metro.',
+    zh: '我不在城里开车，我更喜欢坐地铁。',
+    subjectHint: '主语：yo（我）',
+    note: '-ducir 动词现在时 yo 变为 -zco → conduzco。'
+  },
+  {
+    id: 'p_ducharse_1',
+    verb: 'ducharse',
+    tense: 'presente',
+    personIndex: 0,
+    sentence: 'Después de correr, siempre ___ con agua templada.',
+    zh: '跑步之后，我总是用温水冲个澡。',
+    subjectHint: '主语：yo（我，自复代词 me）',
+    note: 'ducharse 对应 yo 为 me ducho。'
+  },
+  {
+    id: 'p_despertarse_1',
+    verb: 'despertarse',
+    tense: 'presente',
+    personIndex: 0,
+    sentence: 'Sin despertador, ___ a las ocho y media.',
+    zh: '没有闹钟的话，我八点半自然醒。',
+    subjectHint: '主语：yo（我，自复代词 me + e→ie）',
+    note: 'despertarse 对应 yo：me despierto。'
+  },
+  {
+    id: 'p_sentarse_1',
+    verb: 'sentarse',
+    tense: 'presente',
+    personIndex: 3,
+    sentence: 'En el cine nosotros siempre ___ en la fila central.',
+    zh: '在电影院我们总是坐在中间一排。',
+    subjectHint: '主语：nosotros（我们，自复代词 nos）',
+    note: 'sentarse 在 nosotros 不变词干 → nos sentamos。'
+  },
+  {
+    id: 'p_vestirse_1',
+    verb: 'vestirse',
+    tense: 'presente',
+    personIndex: 2,
+    sentence: 'Diego ___ muy rápido por las mañanas.',
+    zh: '迭戈早上穿衣服非常快。',
+    subjectHint: '主语：Diego（他 = él，自复代词 se + e→i）',
+    note: 'vestirse 第三人称单数 e→i → se viste。'
+  },
+  {
+    id: 'p_quedarse_1',
+    verb: 'quedarse',
+    tense: 'presente',
+    personIndex: 0,
+    sentence: 'Hoy llueve mucho, así que ___ en casa leyendo.',
+    zh: '今天雨下得很大，所以我待在家里看书。',
+    subjectHint: '主语：yo（我，自复代词 me）',
+    note: 'quedarse 对应 yo 为 me quedo。'
+  },
+
+  // ---------- INDEFINIDO (简单过去时: Common + Extended) ----------
   {
     id: 'i_hablar_1',
     verb: 'hablar',
@@ -1452,8 +2353,129 @@ const SENTENCES = [
     subjectHint: '主语：yo（我，自复代词 me）',
     note: 'levantarse 简单过去时 yo：me levanté。'
   },
+  // Extended Indefinido
+  {
+    id: 'i_llegar_1',
+    verb: 'llegar',
+    tense: 'indefinido',
+    personIndex: 0,
+    sentence: 'Anoche ___ muy tarde a casa por el tráfico.',
+    zh: '昨晚因为堵车，我很晚才到家。',
+    subjectHint: '主语：yo（我）',
+    note: '-gar 动词在简单过去时 yo 需 g→gu → llegué。'
+  },
+  {
+    id: 'i_buscar_1',
+    verb: 'buscar',
+    tense: 'indefinido',
+    personIndex: 0,
+    sentence: 'Ayer ___ ese libro en tres librerías diferentes.',
+    zh: '昨天我在三家不同的书店找了那本书。',
+    subjectHint: '主语：yo（我）',
+    note: '-car 动词在简单过去时 yo 需 c→qu → busqué。'
+  },
+  {
+    id: 'i_pagar_1',
+    verb: 'pagar',
+    tense: 'indefinido',
+    personIndex: 0,
+    sentence: 'Yo ___ la cuenta porque era su cumpleaños.',
+    zh: '因为是他的生日，所以我买了单。',
+    subjectHint: '主语：yo（我）',
+    note: '-gar 动词在简单过去时 yo 需 g→gu → pagué。'
+  },
+  {
+    id: 'i_poner_1',
+    verb: 'poner',
+    tense: 'indefinido',
+    personIndex: 0,
+    sentence: '___ las llaves encima del escritorio y ahora no están.',
+    zh: '我把钥匙放在书桌上了，现在不见了。',
+    subjectHint: '主语：yo（我）',
+    note: 'poner 简单过去时词干不规则为 pus-，yo → puse（无重音）。'
+  },
+  {
+    id: 'i_traer_1',
+    verb: 'traer',
+    tense: 'indefinido',
+    personIndex: 2,
+    sentence: 'Javier ___ unas flores preciosas para su madre.',
+    zh: '哈维尔给他妈妈带来了一些漂亮的花。',
+    subjectHint: '主语：Javier（他 = él）',
+    note: 'traer 简单过去时词干 traj-，第三人称单数 → trajo（无重音）。'
+  },
+  {
+    id: 'i_conducir_1',
+    verb: 'conducir',
+    tense: 'indefinido',
+    personIndex: 3,
+    sentence: 'El verano pasado nosotros ___ desde Madrid hasta Lisboa.',
+    zh: '去年夏天我们从马德里开车去了里斯本。',
+    subjectHint: '主语：nosotros（我们）',
+    note: 'conducir 简单过去时词干 conduj-，nosotros → condujimos。'
+  },
+  {
+    id: 'i_preferir_1',
+    verb: 'preferir',
+    tense: 'indefinido',
+    personIndex: 2,
+    sentence: 'Al final, Clara ___ quedarse en el hotel.',
+    zh: '最后，克拉拉还是选择留在酒店里。',
+    subjectHint: '主语：Clara（她 = ella）',
+    note: 'preferir 简单过去时第三人称单数 e→i → prefirió。'
+  },
+  {
+    id: 'i_decidir_1',
+    verb: 'decidir',
+    tense: 'indefinido',
+    personIndex: 3,
+    sentence: 'Después de hablarlo, nosotros ___ cambiar de plan.',
+    zh: '商量之后，我们决定改变计划。',
+    subjectHint: '主语：nosotros（我们）',
+    note: 'decidir 是规则 -ir 动词，简单过去时 nosotros → decidimos。'
+  },
+  {
+    id: 'i_divertirse_1',
+    verb: 'divertirse',
+    tense: 'indefinido',
+    personIndex: 5,
+    sentence: 'Los niños ___ muchísimo en el parque de atracciones.',
+    zh: '孩子们在游乐园里玩得超级开心。',
+    subjectHint: '主语：los niños（他们 = ellos，自复代词 se）',
+    note: 'divertirse 简单过去时第三人称复数 e→i → se divirtieron。'
+  },
+  {
+    id: 'i_olvidar_1',
+    verb: 'olvidar',
+    tense: 'indefinido',
+    personIndex: 0,
+    sentence: '¡Perdón! ___ completamente traer el paraguas.',
+    zh: '抱歉！我完全忘了带雨伞。',
+    subjectHint: '主语：yo（我）',
+    note: 'olvidar 是规则 -ar 动词，简单过去时 yo → olvidé。'
+  },
+  {
+    id: 'i_visitar_1',
+    verb: 'visitar',
+    tense: 'indefinido',
+    personIndex: 3,
+    sentence: 'En otoño nosotros ___ la Alhambra de Granada.',
+    zh: '秋天我们参观了格拉纳达的阿尔罕布拉宫。',
+    subjectHint: '主语：nosotros（我们）',
+    note: 'visitar 简单过去时 nosotros → visitamos。'
+  },
+  {
+    id: 'i_perder_1',
+    verb: 'perder',
+    tense: 'indefinido',
+    personIndex: 2,
+    sentence: 'Ayer Marcos ___ el último tren por dos minutos.',
+    zh: '昨天马科斯差两分钟错过了末班火车。',
+    subjectHint: '主语：Marcos（他 = él）',
+    note: 'perder 在简单过去时完全规则（不发生 e→ie）→ perdió。'
+  },
 
-  // ---------- IMPERFECTO (过去未完成时) ----------
+  // ---------- IMPERFECTO (过去未完成时: Common + Extended) ----------
   {
     id: 'm_hablar_1',
     verb: 'hablar',
@@ -1544,8 +2566,89 @@ const SENTENCES = [
     subjectHint: '主语：mi padre（他 = él，自复代词 se）',
     note: 'levantarse 过去未完成时第三人称单数 → se levantaba。'
   },
+  // Extended Imperfecto
+  {
+    id: 'm_caminar_1',
+    verb: 'caminar',
+    tense: 'imperfecto',
+    personIndex: 0,
+    sentence: 'En aquella época yo ___ al colegio todos los días.',
+    zh: '那时候我每天都走路去上学。',
+    subjectHint: '主语：yo（我）',
+    note: 'caminar 过去未完成时 yo 加 -aba → caminaba。'
+  },
+  {
+    id: 'm_nadar_1',
+    verb: 'nadar',
+    tense: 'imperfecto',
+    personIndex: 3,
+    sentence: 'De niños, nosotros ___ en el río cada agosto.',
+    zh: '小时候每年八月我们都在河里游泳。',
+    subjectHint: '主语：nosotros（我们）',
+    note: 'nadar 过去未完成时 nosotros 加 -ábamos → nadábamos。'
+  },
+  {
+    id: 'm_correr_1',
+    verb: 'correr',
+    tense: 'imperfecto',
+    personIndex: 2,
+    sentence: 'Mi perro siempre ___ detrás de la pelota.',
+    zh: '我的狗以前总是追着球跑。',
+    subjectHint: '主语：mi perro（它 = él）',
+    note: 'correr 过去未完成时第三人称单数加 -ía → corría。'
+  },
+  {
+    id: 'm_pensar_1',
+    verb: 'pensar',
+    tense: 'imperfecto',
+    personIndex: 0,
+    sentence: 'Antes yo ___ que el español era muy difícil.',
+    zh: '以前我以为西班牙语非常难。',
+    subjectHint: '主语：yo（我）',
+    note: 'pensar 在过去未完成时完全规则 → pensaba。'
+  },
+  {
+    id: 'm_conocer_1',
+    verb: 'conocer',
+    tense: 'imperfecto',
+    personIndex: 0,
+    sentence: 'Cuando llegué a Madrid, no ___ a nadie.',
+    zh: '当我刚到马德里时，我谁也不认识。',
+    subjectHint: '主语：yo（我）',
+    note: 'conocer 在过去未完成时完全规则 → conocía。'
+  },
+  {
+    id: 'm_divertirse_1',
+    verb: 'divertirse',
+    tense: 'imperfecto',
+    personIndex: 3,
+    sentence: 'En las vacaciones de verano siempre ___ mucho juntos.',
+    zh: '暑假时我们在一起总是玩得很开心。',
+    subjectHint: '主语：nosotros（由 juntos 可知“我们”，自复代词 nos）',
+    note: 'divertirse 过去未完成时完全规则 → nos divertíamos。'
+  },
+  {
+    id: 'm_costar_1',
+    verb: 'costar',
+    tense: 'imperfecto',
+    personIndex: 2,
+    sentence: 'Hace veinte años un café ___ menos de un euro.',
+    zh: '二十年前一杯咖啡不到一欧元。',
+    subjectHint: '主语：un café（它 = él）',
+    note: 'costar 过去未完成时规则 → costaba。'
+  },
+  {
+    id: 'm_esperar_1',
+    verb: 'esperar',
+    tense: 'imperfecto',
+    personIndex: 5,
+    sentence: 'Ellos ___ el autobús cuando empezó a llover.',
+    zh: '开始下雨的时候，他们正在等公交车。',
+    subjectHint: '主语：ellos（他们）',
+    note: '描述过去正在进行的背景动作用过去未完成时 → esperaban。'
+  },
 
-  // ---------- FUTURO (简单将来时) ----------
+  // ---------- FUTURO (简单将来时: Common + Extended) ----------
   {
     id: 'f_hablar_1',
     verb: 'hablar',
@@ -1645,5 +2748,106 @@ const SENTENCES = [
     zh: '明天早上火车将会非常准点发车。',
     subjectHint: '主语：los trenes（它们 = ellos）',
     note: 'salir 将来时词干变为 saldr-，ellos 加 -án → saldrán。'
+  },
+  // Extended Futuro
+  {
+    id: 'f_visitar_1',
+    verb: 'visitar',
+    tense: 'futuro',
+    personIndex: 3,
+    sentence: 'El mes que viene nosotros ___ a nuestros primos en Valencia.',
+    zh: '下个月我们将去瓦伦西亚看望我们的表亲。',
+    subjectHint: '主语：nosotros（我们）',
+    note: '原形 visitar + emos → visitaremos。'
+  },
+  {
+    id: 'f_terminar_1',
+    verb: 'terminar',
+    tense: 'futuro',
+    personIndex: 0,
+    sentence: 'No te preocupes, ___ este informe antes del viernes.',
+    zh: '别担心，周五之前我会完成这份报告。',
+    subjectHint: '主语：yo（我）',
+    note: '原形 terminar + é → terminaré。'
+  },
+  {
+    id: 'f_ayudar_1',
+    verb: 'ayudar',
+    tense: 'futuro',
+    personIndex: 0,
+    sentence: 'Cuenta conmigo, te ___ con la mudanza el sábado.',
+    zh: '包在我身上，周六我来帮你搬家。',
+    subjectHint: '主语：yo（我）',
+    note: '原形 ayudar + é → ayudaré。'
+  },
+  {
+    id: 'f_poner_1',
+    verb: 'poner',
+    tense: 'futuro',
+    personIndex: 2,
+    sentence: 'El profesor ___ las notas mañana por la tarde.',
+    zh: '老师明天下午会公布成绩。',
+    subjectHint: '主语：el profesor（他 = él）',
+    note: 'poner 将来时词干变为 pondr-，第三人称单数加 -á → pondrá。'
+  },
+  {
+    id: 'f_encontrar_1',
+    verb: 'encontrar',
+    tense: 'futuro',
+    personIndex: 1,
+    sentence: 'Estoy seguro de que pronto ___ un buen trabajo.',
+    zh: '我相信你很快就会找到一份好工作。',
+    subjectHint: '主语：tú（你）',
+    note: 'encontrar 在将来时完全规则：encontrar + ás → encontrarás。'
+  },
+  {
+    id: 'f_casarse_1',
+    verb: 'casarse',
+    tense: 'futuro',
+    personIndex: 5,
+    sentence: 'Sofía y Mateo ___ en primavera en la playa.',
+    zh: '索菲亚和马特奥将于春天在海滩结婚。',
+    subjectHint: '主语：Sofía y Mateo（他们 = ellos，自复代词 se）',
+    note: 'casarse 将来时第三人称复数 → se casarán。'
+  },
+  {
+    id: 'f_construir_1',
+    verb: 'construir',
+    tense: 'futuro',
+    personIndex: 5,
+    sentence: 'El próximo año ___ una nueva biblioteca en el barrio.',
+    zh: '明年他们将在街区里建一座新图书馆。',
+    subjectHint: '主语：泛指复数（ellos）',
+    note: 'construir 将来时完全规则：construir + án → construirán。'
+  },
+  {
+    id: 'f_valer_1',
+    verb: 'valer',
+    tense: 'futuro',
+    personIndex: 2,
+    sentence: 'Todo este esfuerzo ___ mucho la pena.',
+    zh: '所有这些努力都会非常值得。',
+    subjectHint: '主语：todo este esfuerzo（它 = él）',
+    note: 'valer 将来时词干不规则变为 valdr-，加 -á → valdrá。'
+  },
+  {
+    id: 'f_traducir_1',
+    verb: 'traducir',
+    tense: 'futuro',
+    personIndex: 0,
+    sentence: 'Esta tarde ___ el documento al español.',
+    zh: '今天下午我会把这份文件翻译成西班牙语。',
+    subjectHint: '主语：yo（我）',
+    note: 'traducir 将来时完全规则：traducir + é → traduciré。'
+  },
+  {
+    id: 'f_quedarse_1',
+    verb: 'quedarse',
+    tense: 'futuro',
+    personIndex: 3,
+    sentence: 'En el viaje ___ tres noches en Sevilla.',
+    zh: '旅途中我们将在塞维利亚住三晚。',
+    subjectHint: '主语：nosotros（我们，自复代词 nos）',
+    note: 'quedarse 将来时 nosotros → nos quedaremos。'
   }
 ];

@@ -40,6 +40,9 @@ if (!Array.isArray(ctx.PERSONS) || ctx.PERSONS.length !== 6) {
 }
 
 for (const v of verbs) {
+  if (v.tier !== 'common' && v.tier !== 'extended') {
+    errors.push(`Verb "${v.infinitive}" has invalid tier "${v.tier}".`);
+  }
   for (const t of tenses) {
     const forms = v.conjugations && v.conjugations[t];
     if (!Array.isArray(forms) || forms.length !== 6) {
@@ -90,6 +93,9 @@ if (errors.length) {
   process.exit(1);
 }
 
+const commonVerbs = verbs.filter((v) => v.tier === 'common').length;
+const extendedVerbs = verbs.filter((v) => v.tier === 'extended').length;
+
 console.log(
-  `Validation passed: ${verbs.length} verbs, ${ctx.SENTENCES.length} sentences, ${new Set(jsIds).size} DOM bindings verified.`
+  `Validation passed: ${verbs.length} verbs (${commonVerbs} common + ${extendedVerbs} extended), ${ctx.SENTENCES.length} sentences, ${new Set(jsIds).size} DOM bindings verified.`
 );

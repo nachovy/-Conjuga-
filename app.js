@@ -56,6 +56,7 @@
   const config = {
     mode: 'mixed', // 'mixed' | 'sentence' | 'direct'
     tenses: ['presente'],
+    verbScope: 'common', // 'common' | 'all'
     category: 'all', // 'all' | 'regular' | 'stem' | 'irregular' | 'reflexive'
     inputMode: 'typing', // 'typing' | 'choice'
     count: 12,
@@ -79,6 +80,7 @@
 
   let refState = {
     search: '',
+    scope: 'all',
     tense: 'presente',
     category: 'all'
   };
@@ -187,19 +189,33 @@
     badge.hidden = count === 0;
   }
 
+  function verbMatchesScope(verb, scope) {
+    return scope === 'all' || verb.tier === 'common';
+  }
+
+  function updateScopeOptionLabels() {
+    const allVerbs = Object.values(VERBS);
+    const commonCount = allVerbs.filter((v) => v.tier === 'common').length;
+    $('scopeCommonCount').textContent = `${commonCount} 个 A1 核心高频词`;
+    $('scopeAllCount').textContent = `${allVerbs.length} 个全量进阶词库`;
+  }
+
   function getMatchingSentences() {
     return SENTENCES.filter((s) => {
       const verb = VERBS[s.verb];
       if (!verb) return false;
+      const scopeMatch = verbMatchesScope(verb, config.verbScope);
       const tenseMatch = config.tenses.includes(s.tense);
       const catMatch = config.category === 'all' || verb.category === config.category;
-      return tenseMatch && catMatch;
+      return scopeMatch && tenseMatch && catMatch;
     });
   }
 
   function getMatchingVerbs() {
     return Object.values(VERBS).filter(
-      (v) => config.category === 'all' || v.category === config.category
+      (v) =>
+        verbMatchesScope(v, config.verbScope) &&
+        (config.category === 'all' || v.category === config.category)
     );
   }
 
@@ -207,14 +223,15 @@
     const sentences = getMatchingSentences();
     const verbs = getMatchingVerbs();
     const directCount = verbs.length * config.tenses.length * 6;
+    const scopeName = config.verbScope === 'common' ? '常用动词' : '大量动词';
     const summaryEl = $('poolSummary');
 
     if (config.mode === 'sentence') {
-      summaryEl.innerHTML = `当前筛选匹配 <strong>${sentences.length}</strong> 道地道句子填空题`;
+      summaryEl.innerHTML = `【${scopeName}】当前匹配 <strong>${verbs.length}</strong> 个动词、<strong>${sentences.length}</strong> 道地道句子填空题`;
     } else if (config.mode === 'direct') {
-      summaryEl.innerHTML = `当前筛选覆盖 <strong>${verbs.length}</strong> 个高频动词，共 <strong>${directCount}</strong> 个变位速问组合`;
+      summaryEl.innerHTML = `【${scopeName}】当前覆盖 <strong>${verbs.length}</strong> 个动词，共 <strong>${directCount}</strong> 个变位速问组合`;
     } else {
-      summaryEl.innerHTML = `当前筛选含 <strong>${sentences.length}</strong> 道句子填空 + <strong>${directCount}</strong> 项变位速问（默认约 75% 填空为主）`;
+      summaryEl.innerHTML = `【${scopeName}】覆盖 <strong>${verbs.length}</strong> 个动词（<strong>${sentences.length}</strong> 道填空 + <strong>${directCount}</strong> 项速问）`;
     }
   }
 
@@ -850,12 +867,13 @@
     // Filter verb cards
     const kw = refState.search.trim().toLowerCase();
     const list = Object.values(VERBS).filter((v) => {
+      const scopeOk = verbMatchesScope(v, refState.scope);
       const catOk = refState.category === 'all' || v.category === refState.category;
       const kwOk =
         !kw ||
         v.infinitive.toLowerCase().includes(kw) ||
         v.meaning.toLowerCase().includes(kw);
-      return catOk && kwOk;
+      return scopeOk && catOk && kwOk;
     });
 
     const grid = $('verbRefGrid');
@@ -867,6 +885,7 @@
     grid.innerHTML = list
       .map((v) => {
         const forms = v.conjugations[refState.tense];
+        const tierLabel = v.tier === 'common' ? '常用' : '扩展';
         return `
           <div class="verb-ref-card">
             <div class="verb-ref-top">
@@ -875,7 +894,10 @@
                   <strong>${escapeHtml(v.infinitive)}</strong>
                   <span>${escapeHtml(v.meaning)}</span>
                 </div>
-                <span class="q-cat-badge" style="display:inline-block;margin-top:4px">${escapeHtml(v.badge)}</span>
+                <div class="verb-ref-badges">
+                  <span class="tier-pill ${v.tier}">${tierLabel}</span>
+                  <span class="q-cat-badge">${escapeHtml(v.badge)}</span>
+                </div>
               </div>
               <button class="audio-mini" data-speak-verb="${escapeHtml(v.infinitive)}" title="朗读原形">🔊</button>
             </div>
@@ -933,6 +955,17 @@
         config.tenses.push(t);
         chip.classList.add('selected');
       }
+      updatePoolSummary();
+    });
+
+    // Verb scope chips (common vs all)
+    $('verbScopeSelector').addEventListener('click', (e) => {
+      const chip = e.target.closest('.chip');
+      if (!chip) return;
+      config.verbScope = chip.dataset.scope;
+      document.querySelectorAll('#verbScopeSelector .chip').forEach((c) => {
+        c.classList.toggle('selected', c === chip);
+      });
       updatePoolSummary();
     });
 
@@ -1099,6 +1132,10 @@
       refState.search = e.target.value;
       renderReferenceView();
     });
+    $('refScopeSelect').addEventListener('change', (e) => {
+      refState.scope = e.target.value;
+      renderReferenceView();
+    });
     $('refTenseSelect').addEventListener('change', (e) => {
       refState.tense = e.target.value;
       renderReferenceView();
@@ -1142,6 +1179,7 @@
 
   // -------------------- Initialize --------------------
   bindEvents();
+  updateScopeOptionLabels();
   renderHomeStats();
   updatePoolSummary();
 })();

@@ -152,6 +152,20 @@
             </div>
 
             <div class="config-group">
+              <label class="group-label">动词词库规模</label>
+              <div class="chip-group" id="verbScopeSelector">
+                <button class="chip selected" data-scope="common">
+                  <span class="chip-main">⭐ 常用动词</span>
+                  <span class="chip-sub" id="scopeCommonCount">36 个 A1 核心高频词</span>
+                </button>
+                <button class="chip" data-scope="all">
+                  <span class="chip-main">📚 大量动词</span>
+                  <span class="chip-sub" id="scopeAllCount">112 个全量进阶词库</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="config-group">
               <label class="group-label">动词类型</label>
               <div class="chip-group compact" id="categorySelector">
                 <button class="chip selected" data-cat="all">全部动词</button>
@@ -416,6 +430,10 @@
           </div>
           <div class="ref-controls">
             <input type="search" id="refSearch" class="search-input" placeholder="搜索动词原形或中文（如 hablar / 去）" />
+            <select id="refScopeSelect" class="select-input">
+              <option value="all">大量动词（全部）</option>
+              <option value="common">仅看常用动词</option>
+            </select>
             <select id="refTenseSelect" class="select-input">
               <option value="presente">陈述式现在时 (Presente)</option>
               <option value="indefinido">简单过去时 (Indefinido)</option>
