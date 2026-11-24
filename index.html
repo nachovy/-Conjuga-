@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>¡Conjuga! · 西班牙语动词变位练习</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Noto+Sans+SC:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-decoration" aria-hidden="true">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <div class="app-shell">
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="brand" id="brandHome" role="button" tabindex="0" title="返回首页">
+        <div class="brand-badge">ñ</div>
+        <div class="brand-text">
+          <h1>¡Conjuga!</h1>
+          <span>西语动词变位小馆</span>
+        </div>
+      </div>
+
+      <nav class="top-nav" aria-label="主导航">
+        <button class="nav-pill active" data-view="home" id="navHome">
+          <span class="nav-icon">✦</span>
+          <span>练习设置</span>
+        </button>
+        <button class="nav-pill" data-view="reference" id="navRef">
+          <span class="nav-icon">📖</span>
+          <span>变位手册</span>
+        </button>
+        <button class="nav-pill" data-view="mistakes" id="navMistakes">
+          <span class="nav-icon">🔖</span>
+          <span>错题本</span>
+          <span class="badge-count" id="mistakeCountBadge" hidden>0</span>
+        </button>
+      </nav>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-content">
+
+      <!-- VIEW 1: HOME / CONFIG -->
+      <section class="view active" id="viewHome">
+        <div class="hero-card">
+          <div class="hero-content">
+            <div class="hero-eyebrow">
+              <span class="dot"></span>
+              <span>专为西班牙语初学者打造 · A1–A2 渐进练习</span>
+            </div>
+            <h2>在真实语境里，<br />自然掌握西语动词变位</h2>
+            <p class="hero-desc">
+              以地道短句填空为主，每题清晰标注<strong>动词原形与中文释义</strong>，穿插高频变位速问与六人称规律解析，轻松攻克 <code>-ar / -er / -ir</code> 与不规则变化。
+            </p>
+            <div class="hero-actions">
+              <button class="btn btn-primary btn-lg" id="btnStartQuick">
+                <span>开始练习</span>
+                <span class="btn-arrow">→</span>
+              </button>
+              <button class="btn btn-ghost" id="btnOpenRules">
+                <span>零基础变位口诀</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="hero-stats">
+            <div class="stat-tile">
+              <div class="stat-value" id="statToday">0</div>
+              <div class="stat-label">今日已练</div>
+            </div>
+            <div class="stat-tile">
+              <div class="stat-value" id="statStreak">0</div>
+              <div class="stat-label">最佳连对</div>
+            </div>
+            <div class="stat-tile">
+              <div class="stat-value" id="statAccuracy">--</div>
+              <div class="stat-label">总正确率</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Practice Configuration Panel -->
+        <div class="config-grid">
+          <!-- Mode Selection -->
+          <div class="panel">
+            <div class="panel-head">
+              <h3>1. 选择练习题型</h3>
+              <span class="panel-sub">推荐「综合练习」</span>
+            </div>
+            <div class="mode-cards" id="modeSelector">
+              <button class="mode-card selected" data-mode="mixed">
+                <div class="mode-top">
+                  <span class="mode-emoji">📝</span>
+                  <span class="mode-tag recommended">推荐</span>
+                </div>
+                <div class="mode-title">综合练习</div>
+                <div class="mode-desc">75% 句子填空 + 25% 变位速问，语境与记忆兼顾</div>
+              </button>
+              <button class="mode-card" data-mode="sentence">
+                <div class="mode-top">
+                  <span class="mode-emoji">💬</span>
+                  <span class="mode-tag">语境</span>
+                </div>
+                <div class="mode-title">纯句子填空</div>
+                <div class="mode-desc">根据日常例句与动词原形，填入正确变位</div>
+              </button>
+              <button class="mode-card" data-mode="direct">
+                <div class="mode-top">
+                  <span class="mode-emoji">⚡</span>
+                  <span class="mode-tag">速记</span>
+                </div>
+                <div class="mode-title">变位速问</div>
+                <div class="mode-desc">直接考查指定动词在某人称与时态下的变位</div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Tense & Verb Category Selection -->
+          <div class="panel">
+            <div class="panel-head">
+              <h3>2. 时态与动词范围</h3>
+              <span class="panel-sub">可多选时态</span>
+            </div>
+
+            <div class="config-group">
+              <label class="group-label">练习时态 (Tiempo verbal)</label>
+              <div class="chip-group" id="tenseSelector">
+                <button class="chip selected" data-tense="presente">
+                  <span class="chip-main">陈述式现在时</span>
+                  <span class="chip-sub">Presente · A1</span>
+                </button>
+                <button class="chip" data-tense="indefinido">
+                  <span class="chip-main">简单过去时</span>
+                  <span class="chip-sub">Indefinido · A2</span>
+                </button>
+                <button class="chip" data-tense="imperfecto">
+                  <span class="chip-main">过去未完成时</span>
+                  <span class="chip-sub">Imperfecto · A2</span>
+                </button>
+                <button class="chip" data-tense="futuro">
+                  <span class="chip-main">简单将来时</span>
+                  <span class="chip-sub">Futuro · A2</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="config-group">
+              <label class="group-label">动词类型</label>
+              <div class="chip-group compact" id="categorySelector">
+                <button class="chip selected" data-cat="all">全部动词</button>
+                <button class="chip" data-cat="regular">规则动词 (-ar/-er/-ir)</button>
+                <button class="chip" data-cat="stem">词干变化 (e→ie / o→ue)</button>
+                <button class="chip" data-cat="irregular">高频不规则</button>
+                <button class="chip" data-cat="reflexive">自复动词 (-se)</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Answer Style & Options -->
+          <div class="panel panel-wide">
+            <div class="panel-head">
+              <h3>3. 答题方式与辅助</h3>
+              <span class="panel-sub">随时可在练习中切换</span>
+            </div>
+
+            <div class="settings-row">
+              <div class="setting-item">
+                <span class="setting-label">作答方式</span>
+                <div class="segmented" id="inputModeSelector">
+                  <button class="seg-btn selected" data-input="typing">⌨️ 拼写输入</button>
+                  <button class="seg-btn" data-input="choice">🔘 四选一（入门友好）</button>
+                </div>
+              </div>
+
+              <div class="setting-item">
+                <span class="setting-label">每组题数</span>
+                <div class="segmented" id="countSelector">
+                  <button class="seg-btn" data-count="8">8 题</button>
+                  <button class="seg-btn selected" data-count="12">12 题</button>
+                  <button class="seg-btn" data-count="20">20 题</button>
+                </div>
+              </div>
+
+              <div class="setting-item toggle-item">
+                <div class="toggle-text">
+                  <span class="setting-label">显示句子中文翻译</span>
+                  <span class="setting-hint">答题前显示例句译文，帮助理解语境</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="toggleShowTranslation" checked />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="setting-item toggle-item">
+                <div class="toggle-text">
+                  <span class="setting-label">严格检查重音符号</span>
+                  <span class="setting-hint">关闭时忽略重音差异并给出温馨提醒</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="toggleStrictAccent" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="start-bar">
+              <div class="pool-summary" id="poolSummary">当前题库匹配充足，准备就绪</div>
+              <button class="btn btn-primary btn-lg" id="btnStartCustom">
+                <span>开始本组练习</span>
+                <span class="btn-arrow">→</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 2: PRACTICE SESSION -->
+      <section class="view" id="viewPractice">
+        <div class="practice-topbar">
+          <button class="btn-icon-text" id="btnExitPractice">
+            <span>←</span>
+            <span>退出</span>
+          </button>
+
+          <div class="progress-wrap">
+            <div class="progress-meta">
+              <span id="progressText">第 1 / 12 题</span>
+              <span class="streak-pill" id="liveStreakPill">🔥 连对 0</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <button class="btn-icon-text" id="btnToggleInputInSession" title="切换输入/选择模式">
+            <span id="sessionModeIcon">🔘</span>
+            <span id="sessionModeLabel">切为选择</span>
+          </button>
+        </div>
+
+        <!-- Question Card -->
+        <article class="question-card" id="questionCard">
+          <div class="q-header">
+            <div class="q-badges">
+              <span class="q-type-badge" id="qTypeBadge">句子填空</span>
+              <span class="q-tense-badge" id="qTenseBadge">陈述式现在时</span>
+              <span class="q-cat-badge" id="qCatBadge">-ar 规则动词</span>
+            </div>
+            <button class="audio-btn" id="btnSpeakPrompt" title="朗读动词或句子 (西语发音)">
+              <span>🔊</span>
+              <span class="audio-label">朗读</span>
+            </button>
+          </div>
+
+          <!-- Sentence Fill-in-the-Blank Prompt -->
+          <div class="prompt-sentence-block" id="sentencePromptBlock">
+            <p class="sentence-display" id="sentenceDisplay"></p>
+            <div class="verb-cue-bar">
+              <div class="verb-cue-pill">
+                <span class="verb-inf" id="cueInfinitive">hablar</span>
+                <span class="verb-sep">·</span>
+                <span class="verb-meaning" id="cueMeaning">说，讲</span>
+              </div>
+              <span class="subject-cue" id="cueSubject"></span>
+            </div>
+            <div class="sentence-translation" id="sentenceTranslation"></div>
+          </div>
+
+          <!-- Direct Conjugation Prompt -->
+          <div class="prompt-direct-block" id="directPromptBlock" hidden>
+            <div class="direct-hero">
+              <div class="direct-verb-box">
+                <span class="direct-label">动词原形与含义</span>
+                <div class="direct-verb-main">
+                  <strong id="directInfinitive">tener</strong>
+                  <span id="directMeaning">有，拥有</span>
+                </div>
+              </div>
+              <div class="direct-arrow">→</div>
+              <div class="direct-target-box">
+                <span class="direct-label">目标人称与时态</span>
+                <div class="direct-target-main">
+                  <strong id="directPerson">yo</strong>
+                  <span id="directPersonCn">（我）</span>
+                </div>
+                <div class="direct-tense-sub" id="directTenseSub">陈述式现在时 Presente</div>
+              </div>
+            </div>
+            <p class="direct-instruction" id="directInstruction">请写出该动词在对应人称与时态下的正确变位：</p>
+          </div>
+
+          <!-- Hint Area -->
+          <div class="hint-row">
+            <button class="btn-link" id="btnShowHint">💡 看个小提示</button>
+            <button class="btn-link" id="btnToggleTransInCard">👁️ 隐藏译文</button>
+          </div>
+          <div class="hint-box" id="hintBox" hidden></div>
+
+          <!-- Typing Answer Area -->
+          <div class="answer-typing-area" id="typingArea">
+            <div class="input-wrapper" id="inputWrapper">
+              <input
+                type="text"
+                id="answerInput"
+                class="answer-input"
+                placeholder="输入西班牙语变位形式..."
+                autocomplete="off"
+                autocapitalize="off"
+                autocorrect="off"
+                spellcheck="false"
+              />
+              <button class="btn btn-primary btn-submit" id="btnSubmitAnswer">检查</button>
+            </div>
+
+            <div class="accent-bar" aria-label="西班牙语重音快捷输入">
+              <span class="accent-label">重音符号：</span>
+              <button type="button" class="accent-key" data-char="á">á</button>
+              <button type="button" class="accent-key" data-char="é">é</button>
+              <button type="button" class="accent-key" data-char="í">í</button>
+              <button type="button" class="accent-key" data-char="ó">ó</button>
+              <button type="button" class="accent-key" data-char="ú">ú</button>
+              <button type="button" class="accent-key" data-char="ñ">ñ</button>
+              <button type="button" class="accent-key" data-char="ü">ü</button>
+            </div>
+          </div>
+
+          <!-- Multiple Choice Area -->
+          <div class="answer-choice-area" id="choiceArea" hidden>
+            <div class="choice-grid" id="choiceGrid"></div>
+          </div>
+
+          <!-- Post-Answer Feedback Panel -->
+          <div class="feedback-panel" id="feedbackPanel" hidden>
+            <div class="feedback-header">
+              <div class="feedback-status">
+                <span class="feedback-icon" id="feedbackIcon">✓</span>
+                <div>
+                  <div class="feedback-title" id="feedbackTitle">回答正确！</div>
+                  <div class="feedback-subtitle" id="feedbackSubtitle"></div>
+                </div>
+              </div>
+              <button class="btn btn-primary" id="btnNextQuestion">
+                <span>下一题</span>
+                <span>→</span>
+              </button>
+            </div>
+
+            <div class="feedback-sentence-box" id="feedbackSentenceBox" hidden>
+              <div class="fb-sent-row">
+                <p class="fb-sent-es" id="fbSentenceEs"></p>
+                <button class="audio-mini" id="btnSpeakFull" title="朗读完整句子">🔊</button>
+              </div>
+              <p class="fb-sent-zh" id="fbSentenceZh"></p>
+            </div>
+
+            <div class="feedback-rule" id="feedbackRule"></div>
+
+            <!-- Collapsible Full 6-Person Paradigm -->
+            <details class="paradigm-details" id="paradigmDetails">
+              <summary>展开完整六人称变位表（<span id="paradigmTitle"></span>）</summary>
+              <div class="paradigm-grid" id="paradigmGrid"></div>
+            </details>
+          </div>
+        </article>
+      </section>
+
+      <!-- VIEW 3: SUMMARY -->
+      <section class="view" id="viewSummary">
+        <div class="summary-card">
+          <div class="summary-medal" id="summaryMedal">🎉</div>
+          <h2 id="summaryHeadline">¡Muy bien! 完成本组练习</h2>
+          <p class="summary-sub" id="summarySub">每一次开口与拼写，都在让你更熟悉西语的节奏。</p>
+
+          <div class="summary-metrics">
+            <div class="metric-box">
+              <div class="metric-num" id="sumScore">0%</div>
+              <div class="metric-lbl">正确率</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-num" id="sumCorrect">0 / 0</div>
+              <div class="metric-lbl">答对题数</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-num" id="sumStreak">0</div>
+              <div class="metric-lbl">本组最高连对</div>
+            </div>
+          </div>
+
+          <div class="summary-review" id="summaryReviewBlock" hidden>
+            <h3>本次错题回顾</h3>
+            <div class="review-list" id="summaryReviewList"></div>
+          </div>
+
+          <div class="summary-actions">
+            <button class="btn btn-primary btn-lg" id="btnPracticeAgain">再来一组</button>
+            <button class="btn btn-secondary" id="btnRetryMistakes" hidden>立即复习本次错题</button>
+            <button class="btn btn-ghost" id="btnBackHome">返回首页设置</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 4: VERB REFERENCE CHEAT SHEET -->
+      <section class="view" id="viewReference">
+        <div class="view-header">
+          <div>
+            <h2>西班牙语动词变位手册</h2>
+            <p>初学者速查：规则词尾规律 + 内置高频动词完整变位表</p>
+          </div>
+          <div class="ref-controls">
+            <input type="search" id="refSearch" class="search-input" placeholder="搜索动词原形或中文（如 hablar / 去）" />
+            <select id="refTenseSelect" class="select-input">
+              <option value="presente">陈述式现在时 (Presente)</option>
+              <option value="indefinido">简单过去时 (Indefinido)</option>
+              <option value="imperfecto">过去未完成时 (Imperfecto)</option>
+              <option value="futuro">简单将来时 (Futuro)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Beginner Quick Rules Banner -->
+        <div class="rules-banner" id="rulesBanner">
+          <div class="rules-banner-head">
+            <h3>✨ 规则动词词尾速记表（<span id="rulesTenseName">陈述式现在时</span>）</h3>
+            <span class="rules-tip" id="rulesTenseTip">去掉动词原形词尾 -ar / -er / -ir，加上对应人称词尾</span>
+          </div>
+          <div class="rules-table-wrap">
+            <table class="rules-table" id="rulesTable"></table>
+          </div>
+        </div>
+
+        <div class="ref-filter-bar" id="refCategoryFilter">
+          <button class="chip small selected" data-cat="all">全部</button>
+          <button class="chip small" data-cat="regular">规则动词</button>
+          <button class="chip small" data-cat="stem">词干变化</button>
+          <button class="chip small" data-cat="irregular">高频不规则</button>
+          <button class="chip small" data-cat="reflexive">自复动词</button>
+        </div>
+
+        <div class="verb-cards-grid" id="verbRefGrid"></div>
+      </section>
+
+      <!-- VIEW 5: MISTAKES NOTEBOOK -->
+      <section class="view" id="viewMistakes">
+        <div class="view-header">
+          <div>
+            <h2>错题巩固本</h2>
+            <p>练习中答错的题目会自动收录于此，答对后可一键移出</p>
+          </div>
+          <div class="mistakes-actions">
+            <button class="btn btn-primary" id="btnPracticeMistakes" disabled>针对错题专项练习</button>
+            <button class="btn btn-ghost" id="btnClearMistakes" disabled>清空错题本</button>
+          </div>
+        </div>
+
+        <div class="empty-state" id="mistakesEmpty">
+          <div class="empty-emoji">🌿</div>
+          <h3>目前没有待复习的错题</h3>
+          <p>开始一组练习吧！遇到没记住的动词变位，系统会自动帮你整理到这里。</p>
+          <button class="btn btn-primary" id="btnGoPracticeFromEmpty">去练习</button>
+        </div>
+
+        <div class="mistakes-list" id="mistakesList"></div>
+      </section>
+
+    </main>
+
+    <!-- Beginner Rules Modal -->
+    <div class="modal-backdrop" id="rulesModal" hidden>
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="rulesModalTitle">
+        <div class="modal-head">
+          <h3 id="rulesModalTitle">初学者必看：西语动词变位入门指南</h3>
+          <button class="modal-close" id="btnCloseRulesModal" aria-label="关闭">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="guide-step">
+            <div class="guide-num">01</div>
+            <div>
+              <h4>认清三大动词原形词尾</h4>
+              <p>所有西班牙语动词原形都以 <strong>-ar</strong>（如 <em>hablar</em> 说）、<strong>-er</strong>（如 <em>comer</em> 吃）或 <strong>-ir</strong>（如 <em>vivir</em> 住）结尾（自复动词末尾多一个 <code>-se</code>，如 <em>llamarse</em>）。</p>
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="guide-num">02</div>
+            <div>
+              <h4>找准句子的主语（人称）</h4>
+              <p>西语变位随主语变化：<strong>yo</strong>（我）、<strong>tú</strong>（你）、<strong>él/ella/usted</strong>（他/她/您）、<strong>nosotros</strong>（我们）、<strong>vosotros</strong>（你们）、<strong>ellos/ellas/ustedes</strong>（他们/诸位）。因为动词词尾已包含人称信息，句子里常省略主语！</p>
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="guide-num">03</div>
+            <div>
+              <h4>现在时核心口诀（A1 第一步）</h4>
+              <p><strong>-ar 动词</strong>：<code>-o, -as, -a, -amos, -áis, -an</code><br />
+                 <strong>-er 动词</strong>：<code>-o, -es, -e, -emos, -éis, -en</code><br />
+                 <strong>-ir 动词</strong>：<code>-o, -es, -e, -imos, -ís, -en</code></p>
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="guide-num">04</div>
+            <div>
+              <h4>鞋形（靴形）词干变化规律</h4>
+              <p>像 <em>querer (e→ie)</em>、<em>poder (o→ue)</em> 这类动词，在 <strong>nosotros / vosotros</strong> 两个人称里<strong>不发生词干变化</strong>（如 <em>queremos, podemos</em>），记住这个规律能少背一半！</p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-foot">
+          <button class="btn btn-primary" id="btnModalStart">明白了，开始练习</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
