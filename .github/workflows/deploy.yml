@@ -19,8 +19,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  validate:
-    name: Validate App & Dataset
+  build:
+    name: Validate & Build Pages Artifact
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -39,31 +39,31 @@ jobs:
       - name: Validate Spanish dataset & DOM bindings
         run: node scripts/validate.js
 
+      - name: Setup Pages
+        if: github.event_name != 'pull_request'
+        uses: actions/configure-pages@v5
+
+      - name: Prepare static site bundle
+        if: github.event_name != 'pull_request'
+        run: |
+          mkdir -p _site
+          cp index.html styles.css data.js app.js _site/
+
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ./_site
+
   deploy:
     name: Deploy to GitHub Pages
-    needs: validate
+    needs: build
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Prepare static site bundle
-        run: |
-          mkdir -p _site
-          cp index.html styles.css data.js app.js _site/
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./_site
-
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
